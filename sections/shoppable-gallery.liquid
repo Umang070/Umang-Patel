@@ -1,6 +1,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&family=Lustria&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500&family=Lustria&display=swap" rel="stylesheet">
 
 <section
   class="sg"
@@ -217,30 +217,53 @@
     display: flex;
   }
 
+  /* Backdrop */
   .sg-qv__backdrop {
     position: absolute;
     inset: 0;
     background: rgba(0, 0, 0, 0.25);
     cursor: pointer;
+    opacity: 0;
+    animation: sgBackdropIn 0.28s ease forwards;
   }
 
+  .sg-qv.is-closing .sg-qv__backdrop {
+    animation: sgBackdropOut 0.24s ease forwards;
+  }
+
+  @keyframes sgBackdropIn {
+    to { opacity: 1; }
+  }
+  @keyframes sgBackdropOut {
+    to { opacity: 0; }
+  }
+
+  /* Card */
   .sg-qv__card {
     position: relative;
     background: #fff;
     width: 100%;
-    max-width: 440px;
-    padding: 32px 28px 28px;
+    max-width: 311px;
+    padding: 35px 20px 20px;
     display: flex;
     flex-direction: column;
     gap: 20px;
-    animation: sgQvIn 0.22s ease;
     max-height: 90vh;
     overflow-y: auto;
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+    animation: sgCardIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
 
-  @keyframes sgQvIn {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
+  .sg-qv.is-closing .sg-qv__card {
+    animation: sgCardOut 0.22s cubic-bezier(0.55, 0, 1, 0.45) forwards;
+  }
+
+  @keyframes sgCardIn {
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes sgCardOut {
+    to { opacity: 0; transform: translateY(16px) scale(0.97); }
   }
 
   /* Close */
@@ -268,8 +291,8 @@
 
   .sg-qv__img-wrap {
     flex-shrink: 0;
-    width: 100px;
-    height: 100px;
+    width: 120px;
+    height: 140px;
     overflow: hidden;
     background: #f5f5f5;
   }
@@ -291,27 +314,38 @@
 
   .sg-qv__title {
     font-family: 'Jost', sans-serif;
-    font-weight: 500;
-    font-size: 18px;
+    font-weight: 300;
+    font-style: normal;
+    font-size: 16px;
     line-height: 120%;
+    letter-spacing: 0px;
+    vertical-align: middle;
     margin: 0;
     color: #1a1a1a;
+    margin-bottom: 20px;
   }
 
   .sg-qv__price {
-    font-family: 'Jost', sans-serif;
+    font-family: 'Lustria', serif;
     font-weight: 400;
+    font-style: normal;
     font-size: 16px;
-    line-height: 1;
+    line-height: 120%;
+    letter-spacing: 0px;
+    vertical-align: middle;
     margin: 0;
     color: #1a1a1a;
+    margin-bottom: 12px;
   }
 
   .sg-qv__desc {
     font-family: 'Jost', sans-serif;
-    font-weight: 400;
-    font-size: 13px;
-    line-height: 140%;
+    font-weight: 300;
+    font-style: normal;
+    font-size: 14px;
+    line-height: 110%;
+    letter-spacing: -0.01em;
+    vertical-align: middle;
     margin: 0;
     color: #555;
     display: -webkit-box;
@@ -344,9 +378,24 @@
 
   /* Color buttons */
   .sg-qv__color-row {
+    position: relative;
     display: flex;
-    flex-wrap: wrap;
-    gap: 0;
+    flex-wrap: nowrap;
+    overflow: hidden;
+  }
+
+  /* The sliding selection indicator */
+  .sg-qv__color-slider {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    background: #1a1a1a;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0;
+    /* transitions set dynamically by JS */
   }
 
   .sg-qv__color-btn {
@@ -354,53 +403,110 @@
     font-weight: 400;
     font-size: 14px;
     line-height: 1;
-    padding: 10px 16px;
-    background: #fff;
-    border: 1px solid #d0d0d0;
-    border-left-width: 4px;
-    cursor: pointer;
-    transition: border-color 0.15s ease, background 0.15s ease;
+    flex: 1 1 0;
+    padding: 14px 16px;
+    background: transparent;
     color: #1a1a1a;
+    border: 1px solid #d0d0d0;
+    border-left: 4px solid var(--swatch, #d0d0d0);
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+    transition: color 0.2s ease;
+  }
+
+  .sg-qv__color-btn + .sg-qv__color-btn {
+    border-left: 4px solid var(--swatch, #d0d0d0);
   }
 
   .sg-qv__color-btn.is-selected {
-    border-color: #1a1a1a;
-    background: #f8f8f8;
+    color: #fff;
   }
 
-  /* Size dropdown */
+  /* Size custom dropdown */
   .sg-qv__size-wrap {
     position: relative;
-    display: flex;
-    align-items: center;
+    user-select: none;
   }
 
-  .sg-qv__size-select {
+  .sg-qv__size-trigger {
     font-family: 'Jost', sans-serif;
     font-weight: 400;
     font-size: 14px;
     line-height: 1;
-    appearance: none;
-    -webkit-appearance: none;
     width: 100%;
-    padding: 12px 40px 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
     border: 1px solid #d0d0d0;
     background: #fff;
     color: #1a1a1a;
     cursor: pointer;
-    border-radius: 0;
+    text-align: left;
   }
 
-  .sg-qv__size-select:focus {
-    outline: none;
-    border-color: #1a1a1a;
+  .sg-qv__size-trigger-text {
+    transition: opacity 0.15s ease;
   }
 
   .sg-qv__size-chevron {
-    position: absolute;
-    right: 14px;
-    pointer-events: none;
+    flex-shrink: 0;
+    transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
     color: #1a1a1a;
+  }
+
+  .sg-qv__size-wrap.is-open .sg-qv__size-chevron {
+    transform: rotate(180deg);
+  }
+
+  .sg-qv__size-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #d0d0d0;
+    border-top: none;
+    z-index: 20;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-6px);
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .sg-qv__size-wrap.is-open .sg-qv__size-list {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .sg-qv__size-opt {
+    font-family: 'Jost', sans-serif;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 1;
+    width: 100%;
+    padding: 14px 16px;
+    text-align: center;
+    background: #fff;
+    color: #1a1a1a;
+    border: none;
+    border-top: 1px solid #f0f0f0;
+    cursor: pointer;
+    display: block;
+    transition: background 0.18s ease, color 0.18s ease;
+  }
+
+  .sg-qv__size-opt:first-child {
+    border-top: none;
+  }
+
+  .sg-qv__size-opt:hover,
+  .sg-qv__size-opt.is-selected {
+    background: #1a1a1a;
+    color: #fff;
   }
 
   /* Add to cart */
@@ -532,7 +638,19 @@
         return Shopify.formatMoney(cents, moneyFormat);
       }
     } catch (e) {}
-    return (cents / 100).toFixed(2);
+
+    // Manual fallback — apply moneyFormat substitutions in longest-match order
+    var fmt     = moneyFormat || '{{amount}}';
+    var amount  = (cents / 100).toFixed(2);
+    var amtComma       = amount.replace('.', ',');
+    var amtNoDec       = String(Math.floor(cents / 100));
+    var amtNoDecComma  = amtNoDec;
+
+    return fmt
+      .replace(/\{\{\s*amount_no_decimals_with_comma_separator\s*\}\}/g, amtNoDecComma)
+      .replace(/\{\{\s*amount_with_comma_separator\s*\}\}/g,             amtComma)
+      .replace(/\{\{\s*amount_no_decimals\s*\}\}/g,                      amtNoDecComma)
+      .replace(/\{\{\s*amount\s*\}\}/g,                                  amount);
   }
 
   // Shopify /products/handle.js returns options as objects: {name, position, values[]}
@@ -591,56 +709,161 @@
       if (isColor) {
         const row = document.createElement('div');
         row.className = 'sg-qv__color-row';
+
+        // Sliding indicator element
+        const slider = document.createElement('div');
+        slider.className = 'sg-qv__color-slider';
+        row.appendChild(slider);
+
+        let sliderVisible = false;
+
+        function placeSlider(btn) {
+          slider.style.transition = 'none';
+          slider.style.left  = btn.offsetLeft + 'px';
+          slider.style.width = btn.offsetWidth + 'px';
+        }
+
+        function fadeInSlider(btn) {
+          // Snap to position first, then fade in
+          placeSlider(btn);
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+              slider.style.transition = 'opacity 0.22s ease';
+              slider.style.opacity = '1';
+              sliderVisible = true;
+            });
+          });
+        }
+
+        function slideSlider(btn) {
+          slider.style.transition = 'left 0.5s cubic-bezier(0.22, 1, 0.36, 1), width 0.5s cubic-bezier(0.22, 1, 0.36, 1)';
+          slider.style.left  = btn.offsetLeft + 'px';
+          slider.style.width = btn.offsetWidth + 'px';
+        }
+
         values.forEach(function (val) {
           const btn = document.createElement('button');
           btn.type = 'button';
           btn.className = 'sg-qv__color-btn';
           btn.textContent = val;
-          btn.style.borderLeftColor = val.toLowerCase();
+          btn.style.setProperty('--swatch', val.toLowerCase());
           if (selectedOptions[name] === val) btn.classList.add('is-selected');
           btn.addEventListener('click', function () {
             selectedOptions[name] = val;
             row.querySelectorAll('.sg-qv__color-btn').forEach(function (b) {
               b.classList.toggle('is-selected', b.textContent === val);
             });
+            if (!sliderVisible) {
+              fadeInSlider(btn);
+            } else {
+              slideSlider(btn);
+            }
             updateAtcState();
           });
           row.appendChild(btn);
         });
+
+        // If a color is pre-selected, place slider instantly (no animation)
+        const preSelected = row.querySelector('.sg-qv__color-btn.is-selected');
+        if (preSelected) {
+          requestAnimationFrame(function () {
+            placeSlider(preSelected);
+            slider.style.opacity = '1';
+            sliderVisible = true;
+          });
+        }
+
         group.appendChild(row);
       } else {
+        const placeholder = 'Choose your ' + name.toLowerCase();
+        let sizeSelected = selectedOptions[name] || null;
+
         const wrap = document.createElement('div');
         wrap.className = 'sg-qv__size-wrap';
 
-        const sel = document.createElement('select');
-        sel.className = 'sg-qv__size-select';
+        // Trigger button
+        const trigger = document.createElement('button');
+        trigger.type = 'button';
+        trigger.className = 'sg-qv__size-trigger';
 
-        const placeholder = document.createElement('option');
-        placeholder.value = '';
-        placeholder.textContent = 'Choose your ' + name.toLowerCase();
-        placeholder.disabled = true;
-        placeholder.selected = !selectedOptions[name];
-        sel.appendChild(placeholder);
-
-        values.forEach(function (val) {
-          const o = document.createElement('option');
-          o.value = val;
-          o.textContent = val;
-          if (selectedOptions[name] === val) o.selected = true;
-          sel.appendChild(o);
-        });
-
-        sel.addEventListener('change', function () {
-          selectedOptions[name] = sel.value;
-          updateAtcState();
-        });
+        const triggerText = document.createElement('span');
+        triggerText.className = 'sg-qv__size-trigger-text';
+        triggerText.textContent = sizeSelected || placeholder;
 
         const chevron = document.createElement('span');
         chevron.className = 'sg-qv__size-chevron';
         chevron.innerHTML = '<svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L6 6L11 1" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
-        wrap.appendChild(sel);
-        wrap.appendChild(chevron);
+        trigger.appendChild(triggerText);
+        trigger.appendChild(chevron);
+
+        // Options list
+        const list = document.createElement('div');
+        list.className = 'sg-qv__size-list';
+        list.setAttribute('aria-hidden', 'true');
+
+        values.forEach(function (val) {
+          const opt = document.createElement('button');
+          opt.type = 'button';
+          opt.className = 'sg-qv__size-opt';
+          opt.textContent = val;
+          if (sizeSelected === val) opt.classList.add('is-selected');
+
+          opt.addEventListener('click', function () {
+            sizeSelected = val;
+            selectedOptions[name] = val;
+
+            // Update trigger text to selected value
+            triggerText.textContent = val;
+
+            // Update selected highlight
+            list.querySelectorAll('.sg-qv__size-opt').forEach(function (o) {
+              o.classList.toggle('is-selected', o.textContent === val);
+            });
+
+            closeDropdown();
+            updateAtcState();
+          });
+
+          list.appendChild(opt);
+        });
+
+        function openDropdown() {
+          // Reset trigger text to placeholder when opening
+          triggerText.textContent = placeholder;
+          wrap.classList.add('is-open');
+          list.setAttribute('aria-hidden', 'false');
+        }
+
+        function closeDropdown() {
+          wrap.classList.remove('is-open');
+          list.setAttribute('aria-hidden', 'true');
+          // Restore selected value or placeholder after dropdown closes
+          triggerText.textContent = sizeSelected || placeholder;
+        }
+
+        trigger.addEventListener('click', function (e) {
+          e.stopPropagation();
+          if (wrap.classList.contains('is-open')) {
+            closeDropdown();
+          } else {
+            // Close any other open dropdowns in this modal
+            modal.querySelectorAll('.sg-qv__size-wrap.is-open').forEach(function (w) {
+              if (w !== wrap) w.classList.remove('is-open');
+            });
+            openDropdown();
+          }
+        });
+
+        // Close on outside click
+        document.addEventListener('click', function onOutside(e) {
+          if (!wrap.contains(e.target)) {
+            if (wrap.classList.contains('is-open')) closeDropdown();
+          }
+        });
+
+        wrap.appendChild(trigger);
+        wrap.appendChild(list);
         group.appendChild(wrap);
       }
 
@@ -648,42 +871,87 @@
     });
   }
 
+  /* ── Product cache + prefetch ── */
+  const productCache = {};
+
+  function fetchProduct(handle) {
+    if (productCache[handle]) return productCache[handle];
+    productCache[handle] = fetch('/products/' + handle + '.js')
+      .then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      });
+    return productCache[handle];
+  }
+
+  function prefetchAll() {
+    grid.querySelectorAll('.sg__pin[data-handle]').forEach(function (pin) {
+      fetchProduct(pin.dataset.handle);
+    });
+  }
+
+  // Prefetch when section is 400px away from entering the viewport
+  const prefetchObserver = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (!entry.isIntersecting) return;
+      prefetchAll();
+      prefetchObserver.disconnect();
+    });
+  }, { rootMargin: '400px 0px' });
+  prefetchObserver.observe(sgSection);
+
+  function populateModal(product) {
+    currentProduct = product;
+    selectedOptions = {};
+
+    elTitle.textContent = product.title;
+    elPrice.textContent = formatMoney(product.price);
+
+    const rawDesc = product.description || '';
+    const tmp = document.createElement('div');
+    tmp.innerHTML = rawDesc;
+    elDesc.textContent = tmp.textContent || tmp.innerText || '';
+
+    if (product.featured_image) {
+      elImg.src = product.featured_image;
+      elImg.alt = product.title;
+    }
+
+    try { renderOptions(); } catch (e) { console.warn('[SG] renderOptions error:', e); }
+    try { updateAtcState(); } catch (e) { console.warn('[SG] updateAtcState error:', e); }
+  }
+
   function openModal(handle) {
-    elAtc.disabled = true;
-    elAtcLbl.textContent = 'ADD TO CART';
-    elImg.src = '';
-    elTitle.textContent = '';
-    elPrice.textContent = '';
-    elDesc.textContent = '';
-    elOpts.innerHTML = '';
+    selectedOptions = {};
+    currentProduct = null;
+    currentVariant = null;
+
+    // If already cached, populate before opening so there's no height jump
+    const cached = productCache[handle];
+    const isResolved = cached && typeof cached.then !== 'function';
+
+    if (isResolved) {
+      populateModal(cached);
+    } else {
+      elAtc.disabled = true;
+      elAtcLbl.textContent = 'ADD TO CART';
+      elImg.src = '';
+      elTitle.textContent = '';
+      elPrice.textContent = '';
+      elDesc.textContent = '';
+      elOpts.innerHTML = '';
+    }
+
     modal.setAttribute('aria-hidden', 'false');
     modal.classList.add('is-open');
     document.body.style.overflow = 'hidden';
 
-    fetch('/products/' + handle + '.js')
-      .then(function (r) {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.json();
-      })
+    // Resolve promise (either fresh fetch or already-in-flight prefetch)
+    fetchProduct(handle)
       .then(function (product) {
-        currentProduct = product;
-        selectedOptions = {};
-
-        elTitle.textContent = product.title;
-        elPrice.textContent = formatMoney(product.price);
-
-        const rawDesc = product.description || '';
-        const tmp = document.createElement('div');
-        tmp.innerHTML = rawDesc;
-        elDesc.textContent = tmp.textContent || tmp.innerText || '';
-
-        if (product.featured_image) {
-          elImg.src = product.featured_image;
-          elImg.alt = product.title;
-        }
-
-        try { renderOptions(); } catch (e) { console.warn('[SG] renderOptions error:', e); }
-        try { updateAtcState(); } catch (e) { console.warn('[SG] updateAtcState error:', e); }
+        // Store resolved value directly so next open is synchronous
+        productCache[handle] = product;
+        populateModal(product);
       })
       .catch(function (err) {
         console.error('[SG] Failed to load product:', err);
@@ -692,12 +960,19 @@
   }
 
   function closeModal() {
-    modal.setAttribute('aria-hidden', 'true');
-    modal.classList.remove('is-open');
-    document.body.style.overflow = '';
-    currentProduct = null;
-    selectedOptions = {};
-    currentVariant = null;
+    if (!modal.classList.contains('is-open')) return;
+    modal.classList.add('is-closing');
+
+    const card = modal.querySelector('.sg-qv__card');
+    card.addEventListener('animationend', function onClose() {
+      card.removeEventListener('animationend', onClose);
+      modal.classList.remove('is-open', 'is-closing');
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      currentProduct = null;
+      selectedOptions = {};
+      currentVariant = null;
+    }, { once: true });
   }
 
   /* ── Add to cart ── */
