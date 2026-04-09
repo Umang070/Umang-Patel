@@ -13,13 +13,13 @@
         "message_color": "#1a1a1a",
         "button_label": "CHOOSE GIFT",
         "button_link": "",
-        "button_background": "#F3EA4C",
-        "button_border_color": "#1a1a1a",
+        "button_background": "#FFF544",
         "button_text_color": "#1a1a1a",
         "button_width": 204,
         "bar_height": 64,
         "section_width": "full-width",
         "color_scheme": "scheme-1",
+        "header_background": "#F5F5F5",
         "border_width": 0,
         "enable_sticky_header": "always"
       }
