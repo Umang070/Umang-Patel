@@ -6,7 +6,8 @@
  * or related systems. Please exercise caution as any changes
  * made to this file may be overwritten.
  * ------------------------------------------------------------
- */{
+ */
+{
   "sections": {
     "hero_jVaWmY": {
       "type": "hero",
@@ -57,6 +58,7 @@
         "text_YLPk4p",
         "button_H9gpTf"
       ],
+      "disabled": true,
       "name": "t:names.hero",
       "settings": {
         "media_type_1": "image",
@@ -65,6 +67,7 @@
         "custom_mobile_media": false,
         "media_type_1_mobile": "image",
         "media_type_2_mobile": "image",
+        "link": "",
         "open_in_new_tab": false,
         "content_direction": "column",
         "vertical_on_mobile": true,
@@ -261,6 +264,7 @@
           ]
         }
       },
+      "disabled": true,
       "name": "Featured collection",
       "settings": {
         "collection": "all",
@@ -281,10 +285,82 @@
         "padding-block-start": 48,
         "padding-block-end": 48
       }
+    },
+    "hero_brand_BPgitd": {
+      "type": "hero-brand",
+      "name": "Hero brand",
+      "settings": {
+        "heading": "The Gift Guide",
+        "subtitle": "<p>Discover Joy: Your Ultimate Holiday Gift Destination. Explore our curated selection and find the perfect gifts to delight your loved ones this holiday season.</p>",
+        "button_label": "SHOP NOW",
+        "button_link": "",
+        "button_background": "#1a1a1a",
+        "button_text_color": "#ffffff",
+        "image": "shopify://shop_images/Group_1000008197.png",
+        "ticker_text": "SUSTAINABLE, ETHICALLY MADE CLOTHES IN SIZES XXS TO 6XL",
+        "ticker_background": "#f5f5f5",
+        "ticker_text_color": "#1a1a1a",
+        "background_color": "#ffffff",
+        "text_color": "#1a1a1a"
+      }
+    },
+    "shoppable_gallery_UGU6wU": {
+      "type": "shoppable-gallery",
+      "blocks": {
+        "product_EWJ8Hk": {
+          "type": "product",
+          "settings": {
+            "product": "black-leather-bag",
+            "pin_x": 50,
+            "pin_y": 62
+          }
+        },
+        "product_jzhFTR": {
+          "type": "product",
+          "settings": {
+            "product": "blue-silk-tuxedo",
+            "pin_x": 87,
+            "pin_y": 52
+          }
+        },
+        "product_HjW4LQ": {
+          "type": "product",
+          "settings": {
+            "product": "chequered-red-shirt",
+            "pin_x": 55,
+            "pin_y": 50
+          }
+        },
+        "product_r7FPrb": {
+          "type": "product",
+          "settings": {
+            "product": "classic-leather-jacket",
+            "pin_x": 42,
+            "pin_y": 46
+          }
+        }
+      },
+      "block_order": [
+        "product_EWJ8Hk",
+        "product_jzhFTR",
+        "product_HjW4LQ",
+        "product_r7FPrb"
+      ],
+      "name": "Shoppable gallery",
+      "settings": {
+        "heading": "Tisso vison in the wild",
+        "columns": 3,
+        "grid_gap": 20,
+        "background_color": "#ffffff",
+        "text_color": "#1a1a1a"
+      }
     }
   },
   "order": [
     "hero_jVaWmY",
-    "product_list_fa6P9H"
+    "product_list_fa6P9H",
+    "hero_brand_BPgitd",
+    "shoppable_gallery_UGU6wU"
   ]
 }
+
