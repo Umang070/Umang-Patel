@@ -1,0 +1,852 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&family=Lustria&display=swap" rel="stylesheet">
+
+<section
+  class="sg"
+  style="
+    --sg-bg: {{ section.settings.background_color }};
+    --sg-text: {{ section.settings.text_color }};
+    --sg-gap: {{ section.settings.grid_gap }}px;
+    --sg-cols: {{ section.settings.columns }};
+    --sg-img-height: {{ section.settings.image_height }}px;
+  "
+>
+  {% if section.settings.heading != blank %}
+    <h2 class="sg__heading">{{ section.settings.heading }}</h2>
+  {% endif %}
+
+  <div class="sg__grid" id="sg-grid-{{ section.id }}">
+    {% for block in section.blocks %}
+      {% assign col_count = section.settings.columns | plus: 0 %}
+      {% assign row = forloop.index0 | divided_by: col_count | floor %}
+      <div
+        class="sg__item"
+        data-row="{{ row }}"
+        {{ block.shopify_attributes }}
+      >
+        {%- assign product = block.settings.product -%}
+        {%- assign display_image = block.settings.custom_image | default: product.featured_image -%}
+
+        {% if display_image != blank %}
+          {{
+            display_image
+            | image_url: width: 800
+            | image_tag:
+              class: 'sg__img',
+              loading: 'lazy',
+              alt: display_image.alt | default: product.title,
+              sizes: '(max-width: 749px) 100vw, 33vw'
+          }}
+        {% else %}
+          <div class="sg__img-placeholder">
+            {{ 'image' | placeholder_svg_tag: 'sg__placeholder-svg' }}
+          </div>
+        {% endif %}
+
+        {% if product != blank %}
+          <button
+            class="sg__pin"
+            type="button"
+            data-handle="{{ product.handle }}"
+            aria-label="Quick view {{ product.title }}"
+            style="left: {{ block.settings.pin_x }}%; top: {{ block.settings.pin_y }}%;"
+          >
+        {% else %}
+          <span
+            class="sg__pin"
+            aria-hidden="true"
+            style="left: {{ block.settings.pin_x }}%; top: {{ block.settings.pin_y }}%;"
+          >
+        {% endif %}
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M4.98047 0.75V9.21154" stroke="black" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="round"/>
+            <path d="M0.75 4.98077H9.21154" stroke="black" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="round"/>
+          </svg>
+        {% if product != blank %}
+          </button>
+        {% else %}
+          </span>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Quick-view modal -->
+  <div class="sg-qv" id="sg-qv-{{ section.id }}" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Quick view">
+    <div class="sg-qv__backdrop"></div>
+    <div class="sg-qv__card">
+      <button class="sg-qv__close" type="button" aria-label="Close">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M1 1L11 11M11 1L1 11" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+
+      <div class="sg-qv__top">
+        <div class="sg-qv__img-wrap">
+          <img class="sg-qv__img" src="" alt="" width="100" height="100">
+        </div>
+        <div class="sg-qv__info">
+          <p class="sg-qv__title"></p>
+          <p class="sg-qv__price"></p>
+          <p class="sg-qv__desc"></p>
+        </div>
+      </div>
+
+      <div class="sg-qv__options"></div>
+
+      <div class="sg-qv__footer">
+        <button class="sg-qv__atc" type="button" disabled>
+          <span class="sg-qv__atc-label">ADD TO CART</span>
+          <span class="sg-qv__atc-icon" aria-hidden="true">
+            <svg width="29" height="12" viewBox="0 0 29 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0.75 4.77298L6.72657e-08 4.77298L-6.72657e-08 6.27298L0.75 6.27298L0.75 4.77298ZM28.6378 6.05331C28.9307 5.76042 28.9307 5.28555 28.6378 4.99265L23.8649 0.219681C23.572 -0.0732126 23.0971 -0.0732126 22.8042 0.219681C22.5113 0.512574 22.5113 0.987448 22.8042 1.28034L27.0469 5.52298L22.8042 9.76562C22.5113 10.0585 22.5113 10.5334 22.8042 10.8263C23.0971 11.1192 23.572 11.1192 23.8649 10.8263L28.6378 6.05331ZM0.75 6.27298L28.1075 6.27298L28.1075 4.77298L0.75 4.77298L0.75 6.27298Z" fill="currentColor"/>
+            </svg>
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+  .sg {
+    background: var(--sg-bg);
+    color: var(--sg-text);
+    width: 100%;
+  }
+
+  .sg__heading {
+    font-family: 'Lustria', serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 36px;
+    line-height: 120%;
+    letter-spacing: 0px;
+    vertical-align: middle;
+    margin: 0;
+    padding: 32px 50px 30px 50px;
+    color: var(--sg-text);
+  }
+
+  /* ── Grid ── */
+  .sg__grid {
+    display: grid;
+    grid-template-columns: repeat(var(--sg-cols), 1fr);
+    gap: var(--sg-gap);
+    padding-inline: 50px;
+  }
+
+  /* ── Each item ── */
+  .sg__item {
+    position: relative;
+    overflow: hidden;
+    display: block;
+    line-height: 0;
+    height: var(--sg-img-height);
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.55s ease, transform 0.55s ease;
+  }
+
+  .sg__item.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .sg__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+  }
+
+  .sg__img-placeholder {
+    width: 100%;
+    height: 100%;
+    background: #e8e8e8;
+  }
+
+  .sg__placeholder-svg {
+    width: 100%;
+    height: 100%;
+    opacity: 0.3;
+  }
+
+  /* ── Plus pin ── */
+  .sg__pin {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #F8F8F8E5;
+    box-shadow: 0px 3px 4px 0px #00000033;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    flex-shrink: 0;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+    border: none;
+    padding: 0;
+  }
+
+  @media (hover: hover) {
+    .sg__pin:hover {
+      transform: translate(-50%, -50%) scale(1.15);
+      box-shadow: 0px 5px 8px 0px #00000044;
+    }
+  }
+
+  /* ════════════════════════════════
+     Quick-view modal
+  ════════════════════════════════ */
+  .sg-qv {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .sg-qv.is-open {
+    display: flex;
+  }
+
+  .sg-qv__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+  }
+
+  .sg-qv__card {
+    position: relative;
+    background: #fff;
+    width: 100%;
+    max-width: 440px;
+    padding: 32px 28px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    animation: sgQvIn 0.22s ease;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  @keyframes sgQvIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Close */
+  .sg-qv__close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 28px;
+    height: 28px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  /* Top row: image + info */
+  .sg-qv__top {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .sg-qv__img-wrap {
+    flex-shrink: 0;
+    width: 100px;
+    height: 100px;
+    overflow: hidden;
+    background: #f5f5f5;
+  }
+
+  .sg-qv__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+  }
+
+  .sg-qv__info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+  }
+
+  .sg-qv__title {
+    font-family: 'Jost', sans-serif;
+    font-weight: 500;
+    font-size: 18px;
+    line-height: 120%;
+    margin: 0;
+    color: #1a1a1a;
+  }
+
+  .sg-qv__price {
+    font-family: 'Jost', sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 1;
+    margin: 0;
+    color: #1a1a1a;
+  }
+
+  .sg-qv__desc {
+    font-family: 'Jost', sans-serif;
+    font-weight: 400;
+    font-size: 13px;
+    line-height: 140%;
+    margin: 0;
+    color: #555;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Options */
+  .sg-qv__options {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .sg-qv__option-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .sg-qv__option-label {
+    font-family: 'Jost', sans-serif;
+    font-weight: 400;
+    font-size: 13px;
+    line-height: 1;
+    color: #1a1a1a;
+    text-transform: capitalize;
+  }
+
+  /* Color buttons */
+  .sg-qv__color-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+  }
+
+  .sg-qv__color-btn {
+    font-family: 'Jost', sans-serif;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 1;
+    padding: 10px 16px;
+    background: #fff;
+    border: 1px solid #d0d0d0;
+    border-left-width: 4px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+    color: #1a1a1a;
+  }
+
+  .sg-qv__color-btn.is-selected {
+    border-color: #1a1a1a;
+    background: #f8f8f8;
+  }
+
+  /* Size dropdown */
+  .sg-qv__size-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .sg-qv__size-select {
+    font-family: 'Jost', sans-serif;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 1;
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    padding: 12px 40px 12px 14px;
+    border: 1px solid #d0d0d0;
+    background: #fff;
+    color: #1a1a1a;
+    cursor: pointer;
+    border-radius: 0;
+  }
+
+  .sg-qv__size-select:focus {
+    outline: none;
+    border-color: #1a1a1a;
+  }
+
+  .sg-qv__size-chevron {
+    position: absolute;
+    right: 14px;
+    pointer-events: none;
+    color: #1a1a1a;
+  }
+
+  /* Add to cart */
+  .sg-qv__footer {
+    margin-top: 4px;
+  }
+
+  .sg-qv__atc {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    background: #1a1a1a;
+    color: #fff;
+    border: none;
+    padding: 14px 28px;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+  }
+
+  .sg-qv__atc:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .sg-qv__atc-label {
+    font-family: 'Jost', sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 20.48px;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  .sg-qv__atc-icon {
+    display: inline-flex;
+    align-items: center;
+    transition: transform 0.2s ease;
+  }
+
+  @media (hover: hover) {
+    .sg-qv__atc:not(:disabled):hover .sg-qv__atc-icon {
+      transform: translateX(4px);
+    }
+  }
+
+  .sg-qv__atc-label.is-added {
+    letter-spacing: 0.02em;
+  }
+
+  /* ── Mobile ── */
+  @media screen and (max-width: 749px) {
+    .sg__grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2px;
+      padding-inline: 16px;
+    }
+
+    .sg__heading {
+      font-size: 28px;
+      padding: 24px 16px 16px 16px;
+    }
+
+    .sg-qv__card {
+      max-width: 100%;
+      margin: 16px;
+      padding: 24px 20px 20px;
+    }
+  }
+{% endstylesheet %}
+
+<script>
+(function () {
+  const grid  = document.getElementById('sg-grid-{{ section.id }}');
+  const modal = document.getElementById('sg-qv-{{ section.id }}');
+  const sgSection = grid && grid.closest('.sg');
+  if (!grid || !modal || !sgSection) return;
+
+  const moneyFormat = {{ shop.money_format | json }};
+
+  /* ── Scroll reveal ── */
+  const items = Array.from(grid.querySelectorAll('.sg__item'));
+  const rowMap = {};
+  items.forEach(function (el) {
+    const row = el.dataset.row;
+    if (!rowMap[row]) rowMap[row] = [];
+    rowMap[row].push(el);
+  });
+  const rows = Object.keys(rowMap).sort(function (a, b) { return a - b; });
+  rows.forEach(function (row) {
+    rowMap[row].forEach(function (el, colIdx) {
+      el.style.transitionDelay = (colIdx * 0.08) + 's';
+    });
+  });
+  const revealObserver = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (!entry.isIntersecting) return;
+      const row = entry.target.dataset.row;
+      if (rowMap[row]) {
+        rowMap[row].forEach(function (el) { el.classList.add('is-visible'); });
+      }
+      revealObserver.unobserve(entry.target);
+    });
+  }, { threshold: 0.05, rootMargin: '0px 0px 60px 0px' });
+  rows.forEach(function (row) { revealObserver.observe(rowMap[row][0]); });
+
+  // Fallback: reveal everything if already in view after a short delay
+  setTimeout(function () {
+    items.forEach(function (el) { el.classList.add('is-visible'); });
+  }, 300);
+
+  /* ── Modal state ── */
+  let currentProduct = null;
+  let selectedOptions = {};
+  let currentVariant = null;
+
+  const elImg    = modal.querySelector('.sg-qv__img');
+  const elTitle  = modal.querySelector('.sg-qv__title');
+  const elPrice  = modal.querySelector('.sg-qv__price');
+  const elDesc   = modal.querySelector('.sg-qv__desc');
+  const elOpts   = modal.querySelector('.sg-qv__options');
+  const elAtc    = modal.querySelector('.sg-qv__atc');
+  const elAtcLbl = modal.querySelector('.sg-qv__atc-label');
+
+  function formatMoney(cents) {
+    try {
+      if (typeof Shopify !== 'undefined' && typeof Shopify.formatMoney === 'function') {
+        return Shopify.formatMoney(cents, moneyFormat);
+      }
+    } catch (e) {}
+    return (cents / 100).toFixed(2);
+  }
+
+  // Shopify /products/handle.js returns options as objects: {name, position, values[]}
+  function optionName(opt) {
+    return typeof opt === 'string' ? opt : opt.name;
+  }
+  function optionValues(opt, idx) {
+    if (opt.values && opt.values.length) return opt.values;
+    return [...new Set(currentProduct.variants.map(function (v) {
+      return v['option' + (idx + 1)];
+    }))];
+  }
+
+  function findVariant() {
+    if (!currentProduct) return null;
+    return currentProduct.variants.find(function (v) {
+      return currentProduct.options.every(function (opt, i) {
+        return v['option' + (i + 1)] === selectedOptions[optionName(opt)];
+      });
+    }) || null;
+  }
+
+  function updateAtcState() {
+    currentVariant = findVariant();
+    const allSelected = currentProduct.options.every(function (opt) {
+      return selectedOptions[optionName(opt)];
+    });
+    elAtc.disabled = !allSelected || !currentVariant || !currentVariant.available;
+    elAtcLbl.textContent = (currentVariant && !currentVariant.available) ? 'SOLD OUT' : 'ADD TO CART';
+  }
+
+  function renderOptions() {
+    elOpts.innerHTML = '';
+    if (!currentProduct || !currentProduct.options || currentProduct.options.length === 0) return;
+
+    // Skip the dummy "Title" option on single-variant products
+    const opts = currentProduct.options.filter(function (opt) {
+      return optionName(opt) !== 'Title';
+    });
+    if (opts.length === 0) return;
+
+    opts.forEach(function (opt, optIdx) {
+      const name   = optionName(opt);
+      const values = optionValues(opt, optIdx);
+
+      const group = document.createElement('div');
+      group.className = 'sg-qv__option-group';
+
+      const label = document.createElement('p');
+      label.className = 'sg-qv__option-label';
+      label.textContent = name;
+      group.appendChild(label);
+
+      const isColor = /colou?r/i.test(name);
+
+      if (isColor) {
+        const row = document.createElement('div');
+        row.className = 'sg-qv__color-row';
+        values.forEach(function (val) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'sg-qv__color-btn';
+          btn.textContent = val;
+          btn.style.borderLeftColor = val.toLowerCase();
+          if (selectedOptions[name] === val) btn.classList.add('is-selected');
+          btn.addEventListener('click', function () {
+            selectedOptions[name] = val;
+            row.querySelectorAll('.sg-qv__color-btn').forEach(function (b) {
+              b.classList.toggle('is-selected', b.textContent === val);
+            });
+            updateAtcState();
+          });
+          row.appendChild(btn);
+        });
+        group.appendChild(row);
+      } else {
+        const wrap = document.createElement('div');
+        wrap.className = 'sg-qv__size-wrap';
+
+        const sel = document.createElement('select');
+        sel.className = 'sg-qv__size-select';
+
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = 'Choose your ' + name.toLowerCase();
+        placeholder.disabled = true;
+        placeholder.selected = !selectedOptions[name];
+        sel.appendChild(placeholder);
+
+        values.forEach(function (val) {
+          const o = document.createElement('option');
+          o.value = val;
+          o.textContent = val;
+          if (selectedOptions[name] === val) o.selected = true;
+          sel.appendChild(o);
+        });
+
+        sel.addEventListener('change', function () {
+          selectedOptions[name] = sel.value;
+          updateAtcState();
+        });
+
+        const chevron = document.createElement('span');
+        chevron.className = 'sg-qv__size-chevron';
+        chevron.innerHTML = '<svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L6 6L11 1" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+        wrap.appendChild(sel);
+        wrap.appendChild(chevron);
+        group.appendChild(wrap);
+      }
+
+      elOpts.appendChild(group);
+    });
+  }
+
+  function openModal(handle) {
+    elAtc.disabled = true;
+    elAtcLbl.textContent = 'ADD TO CART';
+    elImg.src = '';
+    elTitle.textContent = '';
+    elPrice.textContent = '';
+    elDesc.textContent = '';
+    elOpts.innerHTML = '';
+    modal.setAttribute('aria-hidden', 'false');
+    modal.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+
+    fetch('/products/' + handle + '.js')
+      .then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(function (product) {
+        currentProduct = product;
+        selectedOptions = {};
+
+        elTitle.textContent = product.title;
+        elPrice.textContent = formatMoney(product.price);
+
+        const rawDesc = product.description || '';
+        const tmp = document.createElement('div');
+        tmp.innerHTML = rawDesc;
+        elDesc.textContent = tmp.textContent || tmp.innerText || '';
+
+        if (product.featured_image) {
+          elImg.src = product.featured_image;
+          elImg.alt = product.title;
+        }
+
+        try { renderOptions(); } catch (e) { console.warn('[SG] renderOptions error:', e); }
+        try { updateAtcState(); } catch (e) { console.warn('[SG] updateAtcState error:', e); }
+      })
+      .catch(function (err) {
+        console.error('[SG] Failed to load product:', err);
+        if (!elTitle.textContent) elTitle.textContent = 'Unable to load product.';
+      });
+  }
+
+  function closeModal() {
+    modal.setAttribute('aria-hidden', 'true');
+    modal.classList.remove('is-open');
+    document.body.style.overflow = '';
+    currentProduct = null;
+    selectedOptions = {};
+    currentVariant = null;
+  }
+
+  /* ── Add to cart ── */
+  elAtc.addEventListener('click', function () {
+    if (!currentVariant || elAtc.disabled) return;
+    elAtc.disabled = true;
+    elAtcLbl.textContent = 'ADDING…';
+
+    fetch('/cart/add.js', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: [{ id: currentVariant.id, quantity: 1 }] })
+    })
+      .then(function (r) { return r.json(); })
+      .then(function () {
+        elAtcLbl.textContent = 'ADDED!';
+        setTimeout(function () {
+          elAtcLbl.textContent = 'ADD TO CART';
+          elAtc.disabled = false;
+          document.dispatchEvent(new CustomEvent('cart:refresh'));
+        }, 1400);
+      })
+      .catch(function () {
+        elAtcLbl.textContent = 'ADD TO CART';
+        elAtc.disabled = false;
+      });
+  });
+
+  /* ── Event listeners ── */
+  grid.addEventListener('click', function (e) {
+    const pin = e.target.closest('.sg__pin[data-handle]');
+    if (!pin) return;
+    openModal(pin.dataset.handle);
+  });
+
+  modal.querySelector('.sg-qv__close').addEventListener('click', closeModal);
+  modal.querySelector('.sg-qv__backdrop').addEventListener('click', closeModal);
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
+  });
+})();
+</script>
+
+{% schema %}
+{
+  "name": "Shoppable gallery",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Tisso vison in the wild"
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "label": "Columns",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "image_height",
+      "label": "Image height",
+      "min": 350,
+      "max": 550,
+      "step": 2,
+      "unit": "px",
+      "default": 444
+    },
+    {
+      "type": "range",
+      "id": "grid_gap",
+      "label": "Gap between images (px)",
+      "min": 0,
+      "max": 24,
+      "step": 1,
+      "default": 20
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Heading color",
+      "default": "#1a1a1a"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "product",
+      "name": "Product",
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Product"
+        },
+        {
+          "type": "image_picker",
+          "id": "custom_image",
+          "label": "Custom image (overrides product image)"
+        },
+        {
+          "type": "header",
+          "content": "Pin position"
+        },
+        {
+          "type": "range",
+          "id": "pin_x",
+          "label": "Horizontal position",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 50
+        },
+        {
+          "type": "range",
+          "id": "pin_y",
+          "label": "Vertical position",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 50
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Shoppable gallery",
+      "blocks": [
+        { "type": "product" },
+        { "type": "product" },
+        { "type": "product" },
+        { "type": "product" },
+        { "type": "product" },
+        { "type": "product" }
+      ]
+    }
+  ]
+}
+{% endschema %}

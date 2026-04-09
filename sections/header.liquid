@@ -17,6 +17,10 @@
   endif
 %}
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400&display=swap" rel="stylesheet">
+
 <script type="application/ld+json">
   {
     "@context": "http://schema.org",
@@ -44,8 +48,8 @@
     --brandbar-height: {{ bar_height }}px;
     --brandbar-logo-width: {{ logo_width }}px;
     --brandbar-cta-width: {{ button_width }}px;
+    --brandbar-bg: {{ section.settings.header_background }};
     --brandbar-cta-bg: {{ section.settings.button_background }};
-    --brandbar-cta-border: {{ section.settings.button_border_color }};
     --brandbar-cta-text: {{ section.settings.button_text_color }};
     --brandbar-message-color: {{ section.settings.message_color }};
   "
@@ -106,9 +110,8 @@
             <a class="brandbar__cta-button" href="{{ button_link }}">
               <span class="brandbar__cta-label">{{ button_label }}</span>
               <span class="brandbar__cta-icon" aria-hidden="true">
-                <svg viewBox="0 0 18 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M11.2 1L16 6L11.2 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
-                  <path d="M16 6H1" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
+                <svg width="29" height="12" viewBox="0 0 29 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M0.75 4.77298L6.72657e-08 4.77298L-6.72657e-08 6.27298L0.75 6.27298L0.75 4.77298ZM28.6378 6.05331C28.9307 5.76042 28.9307 5.28555 28.6378 4.99265L23.8649 0.219681C23.572 -0.0732126 23.0971 -0.0732126 22.8042 0.219681C22.5113 0.512574 22.5113 0.987448 22.8042 1.28034L27.0469 5.52298L22.8042 9.76562C22.5113 10.0585 22.5113 10.5334 22.8042 10.8263C23.0971 11.1192 23.572 11.1192 23.8649 10.8263L28.6378 6.05331ZM0.75 6.27298L28.1075 6.27298L28.1075 4.77298L0.75 4.77298L0.75 6.27298Z" fill="currentColor"/>
                 </svg>
               </span>
             </a>
@@ -116,9 +119,8 @@
             <span class="brandbar__cta-button brandbar__cta-button--disabled">
               <span class="brandbar__cta-label">{{ button_label }}</span>
               <span class="brandbar__cta-icon" aria-hidden="true">
-                <svg viewBox="0 0 18 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M11.2 1L16 6L11.2 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
-                  <path d="M16 6H1" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
+                <svg width="29" height="12" viewBox="0 0 29 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M0.75 4.77298L6.72657e-08 4.77298L-6.72657e-08 6.27298L0.75 6.27298L0.75 4.77298ZM28.6378 6.05331C28.9307 5.76042 28.9307 5.28555 28.6378 4.99265L23.8649 0.219681C23.572 -0.0732126 23.0971 -0.0732126 22.8042 0.219681C22.5113 0.512574 22.5113 0.987448 22.8042 1.28034L27.0469 5.52298L22.8042 9.76562C22.5113 10.0585 22.5113 10.5334 22.8042 10.8263C23.0971 11.1192 23.572 11.1192 23.8649 10.8263L28.6378 6.05331ZM0.75 6.27298L28.1075 6.27298L28.1075 4.77298L0.75 4.77298L0.75 6.27298Z" fill="currentColor"/>
                 </svg>
               </span>
             </span>
@@ -191,13 +193,13 @@
   .header__underlay-closed {
     height: 100%;
     z-index: var(--layer-lowest);
-    background: var(--color-scheme-top-row);
+    background: var(--brandbar-bg, var(--color-scheme-top-row));
     transition: height var(--animation-speed-slow) var(--ease-out-cubic);
   }
 
   .header__underlay-open {
     height: var(--full-open-header-height);
-    background: var(--color-scheme-top-row);
+    background: var(--brandbar-bg, var(--color-scheme-top-row));
     transition: height var(--submenu-animation-speed) var(--ease-out-cubic);
   }
 
@@ -282,11 +284,14 @@
   }
 
   .brandbar__message-text {
-    font-family: var(--font-body--family);
+    font-family: 'Jost', sans-serif;
     font-weight: 400;
+    font-style: normal;
     font-size: 16px;
-    line-height: 1;
-    letter-spacing: 0;
+    line-height: 1.2;
+    letter-spacing: 0px;
+    text-align: center;
+    vertical-align: middle;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -308,7 +313,7 @@
     justify-content: center;
     gap: 14px;
     background: var(--brandbar-cta-bg);
-    border: 2px solid var(--brandbar-cta-border);
+    border: none;
     color: var(--brandbar-cta-text);
     text-decoration: none;
     cursor: pointer;
@@ -316,21 +321,24 @@
     transition:
       transform var(--animation-speed) var(--animation-easing),
       background-color var(--animation-speed) var(--animation-easing),
-      border-color var(--animation-speed) var(--animation-easing),
       color var(--animation-speed) var(--animation-easing);
     will-change: transform;
   }
 
   .brandbar__cta-label {
-    font-family: var(--font-body--family);
+    font-family: 'Jost', sans-serif;
     font-weight: 400;
+    font-style: normal;
     font-size: 16px;
-    line-height: 1;
-    letter-spacing: 0;
+    line-height: 20.48px;
+    letter-spacing: 0px;
+    text-align: center;
+    vertical-align: middle;
+    text-transform: uppercase;
   }
 
   .brandbar__cta-icon {
-    width: 18px;
+    width: 29px;
     height: 12px;
     display: inline-flex;
     align-items: center;
@@ -340,7 +348,7 @@
   }
 
   .brandbar__cta-icon svg {
-    width: 18px;
+    width: 29px;
     height: 12px;
   }
 
@@ -469,13 +477,7 @@
       "type": "color",
       "id": "button_background",
       "label": "Button background",
-      "default": "#F3EA4C"
-    },
-    {
-      "type": "color",
-      "id": "button_border_color",
-      "label": "Button border color",
-      "default": "#1a1a1a"
+      "default": "#FFF544"
     },
     {
       "type": "color",
@@ -496,6 +498,12 @@
     {
       "type": "header",
       "content": "Appearance"
+    },
+    {
+      "type": "color",
+      "id": "header_background",
+      "label": "Header background color",
+      "default": "#F5F5F5"
     },
     {
       "type": "range",

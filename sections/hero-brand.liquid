@@ -1,0 +1,371 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&display=swap" rel="stylesheet">
+
+<section
+  class="hero-brand"
+  style="
+    --hero-bg: {{ section.settings.background_color }};
+    --hero-text: {{ section.settings.text_color }};
+    --hero-btn-bg: {{ section.settings.button_background }};
+    --hero-btn-text: {{ section.settings.button_text_color }};
+    --hero-ticker-bg: {{ section.settings.ticker_background }};
+    --hero-ticker-text: {{ section.settings.ticker_text_color }};
+  "
+>
+  <div class="hero-brand__body">
+
+    <!-- Full-width background image -->
+    <div class="hero-brand__media" aria-hidden="true">
+      {% if section.settings.image != blank %}
+        {{
+          section.settings.image
+          | image_url: width: 2000
+          | image_tag:
+            class: 'hero-brand__image',
+            loading: 'eager',
+            alt: '',
+            sizes: '100vw'
+        }}
+      {% else %}
+        <div class="hero-brand__image-placeholder">
+          {{ 'image' | placeholder_svg_tag: 'hero-brand__placeholder-svg' }}
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Overlay: text content bottom-left -->
+    <div class="hero-brand__content">
+      <h2 class="hero-brand__heading">{{ section.settings.heading }}</h2>
+      <div class="hero-brand__subtitle">{{ section.settings.subtitle }}</div>
+
+      {% if section.settings.button_label != blank %}
+        <a
+          class="hero-brand__btn"
+          href="{{ section.settings.button_link | default: '#' }}"
+        >
+          <span class="hero-brand__btn-label">{{ section.settings.button_label }}</span>
+          <span class="hero-brand__btn-icon" aria-hidden="true">
+            <svg width="29" height="12" viewBox="0 0 29 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0.75 4.77298L6.72657e-08 4.77298L-6.72657e-08 6.27298L0.75 6.27298L0.75 4.77298ZM28.6378 6.05331C28.9307 5.76042 28.9307 5.28555 28.6378 4.99265L23.8649 0.219681C23.572 -0.0732126 23.0971 -0.0732126 22.8042 0.219681C22.5113 0.512574 22.5113 0.987448 22.8042 1.28034L27.0469 5.52298L22.8042 9.76562C22.5113 10.0585 22.5113 10.5334 22.8042 10.8263C23.0971 11.1192 23.572 11.1192 23.8649 10.8263L28.6378 6.05331ZM0.75 6.27298L28.1075 6.27298L28.1075 4.77298L0.75 4.77298L0.75 6.27298Z" fill="currentColor"/>
+            </svg>
+          </span>
+        </a>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <!-- Bottom ticker bar -->
+  {% if section.settings.ticker_text != blank %}
+    <div class="hero-brand__ticker">
+      <span class="hero-brand__ticker-text">{{ section.settings.ticker_text }}</span>
+    </div>
+  {% endif %}
+</section>
+
+{% stylesheet %}
+  .hero-brand {
+    background: var(--hero-bg);
+    color: var(--hero-text);
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  /* ── Body: image drives the height, content overlays bottom-left ── */
+  .hero-brand__body {
+    display: grid;
+    grid-template-areas: "hero";
+  }
+
+  /* ── Image: in normal flow so it sets the section height ── */
+  .hero-brand__media {
+    grid-area: hero;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  /* ── Content: overlays the same grid cell, pinned bottom-left ── */
+  .hero-brand__content {
+    grid-area: hero;
+    position: relative;
+    z-index: 1;
+    align-self: end;
+    display: flex;
+    flex-direction: column;
+    padding: 48px 0px 56px 60px;
+    gap: 24px;
+    max-width: 800px;
+  }
+
+  .hero-brand__heading {
+    font-family: 'Jost', sans-serif;
+    font-weight: 500;
+    font-style: normal;
+    font-size: 70px;
+    line-height: 100%;
+    letter-spacing: 0px;
+    vertical-align: middle;
+    margin: 0;
+    color: var(--hero-text);
+  }
+
+  .hero-brand__subtitle {
+    font-family: 'Jost', sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 20px;
+    line-height: 140%;
+    letter-spacing: 0px;
+    vertical-align: middle;
+    color: var(--hero-text);
+    max-width: 380px;
+  }
+
+  .hero-brand__subtitle p,
+  .hero-brand__subtitle ul,
+  .hero-brand__subtitle ol {
+    margin: 0;
+  }
+
+  .hero-brand__subtitle p + p {
+    margin-top: 0.75em;
+  }
+
+  .hero-brand__subtitle a {
+    color: var(--hero-text);
+    text-decoration: underline;
+  }
+
+  .hero-brand__subtitle strong {
+    font-weight: 600;
+  }
+
+  /* ── Button ── */
+  .hero-brand__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    background: var(--hero-btn-bg);
+    color: var(--hero-btn-text);
+    text-decoration: none;
+    padding: 14px 28px;
+    width: fit-content;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    will-change: transform;
+  }
+
+  .hero-brand__btn-label {
+    font-family: 'Jost', sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 16px;
+    line-height: 20.48px;
+    letter-spacing: 0px;
+    text-align: center;
+    vertical-align: middle;
+    text-transform: uppercase;
+  }
+
+  .hero-brand__btn-icon {
+    width: 29px;
+    height: 12px;
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+  }
+
+  .hero-brand__btn-icon svg {
+    width: 29px;
+    height: 12px;
+  }
+
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .hero-brand__btn:hover {
+      transform: translateY(-2px);
+      opacity: 0.92;
+    }
+
+    .hero-brand__btn:hover .hero-brand__btn-icon {
+      transform: translateX(4px);
+    }
+  }
+
+  .hero-brand__image {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .hero-brand__image-placeholder {
+    width: 100%;
+    height: 100%;
+    background: #e8e8e8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hero-brand__placeholder-svg {
+    width: 100%;
+    height: 100%;
+    opacity: 0.3;
+  }
+
+  /* ── Bottom ticker bar ── */
+  .hero-brand__ticker {
+    background: var(--hero-ticker-bg);
+    color: var(--hero-ticker-text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-block: 12px;
+    width: 100%;
+  }
+
+  .hero-brand__ticker-text {
+    font-family: 'Jost', sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 16px;
+    line-height: 13.42px;
+    letter-spacing: 0px;
+    text-align: center;
+    vertical-align: middle;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ── Mobile ── */
+  @media screen and (max-width: 749px) {
+    .hero-brand__content {
+      padding: 32px 24px 40px;
+      max-width: 100%;
+    }
+
+    .hero-brand__heading {
+      font-size: 42px;
+    }
+
+    .hero-brand__subtitle {
+      font-size: 17px;
+      max-width: 100%;
+    }
+
+    .hero-brand__ticker-text {
+      white-space: normal;
+      text-align: center;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Hero brand",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "The Gift Guide"
+    },
+    {
+      "type": "richtext",
+      "id": "subtitle",
+      "label": "Subtitle",
+      "default": "<p>Discover Joy: Your Ultimate Holiday Gift Destination. Explore our curated selection and find the perfect gifts to delight your loved ones this holiday season.</p>"
+    },
+    {
+      "type": "header",
+      "content": "Button"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "SHOP NOW"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "color",
+      "id": "button_background",
+      "label": "Button background",
+      "default": "#1a1a1a"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "Image"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "header",
+      "content": "Bottom bar"
+    },
+    {
+      "type": "text",
+      "id": "ticker_text",
+      "label": "Bottom bar text",
+      "default": "SUSTAINABLE, ETHICALLY MADE CLOTHES IN SIZES XXS TO 6XL"
+    },
+    {
+      "type": "color",
+      "id": "ticker_background",
+      "label": "Bottom bar background",
+      "default": "#F5F5F5"
+    },
+    {
+      "type": "color",
+      "id": "ticker_text_color",
+      "label": "Bottom bar text color",
+      "default": "#1a1a1a"
+    },
+    {
+      "type": "header",
+      "content": "Appearance"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Section background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#1a1a1a"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Hero brand"
+    }
+  ]
+}
+{% endschema %}
