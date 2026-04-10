@@ -2,6 +2,7 @@
 {% liquid
   assign bar_height = section.settings.bar_height | default: 64 | times: 1
   assign logo_width = section.settings.logo_width | default: 152 | times: 1
+  assign mobile_logo_width = section.settings.mobile_logo_width | default: 120 | times: 1
   assign button_width = section.settings.button_width | default: 207 | times: 1
 
   assign logo_text = section.settings.logo_text | strip
@@ -47,6 +48,7 @@
     --color-scheme-bottom-row: rgba({{ section.settings.color_scheme.settings.background.rgba }});
     --brandbar-height: {{ bar_height }}px;
     --brandbar-logo-width: {{ logo_width }}px;
+    --brandbar-logo-width-mobile: {{ mobile_logo_width }}px;
     --brandbar-cta-width: {{ button_width }}px;
     --brandbar-bg: {{ section.settings.header_background }};
     --brandbar-cta-bg: {{ section.settings.button_background }};
@@ -544,8 +546,8 @@
 
     .brandbar__mobile-logo-image {
       height: calc(var(--brandbar-height) - 24px);
-      width: auto;
-      max-width: 180px;
+      width: var(--brandbar-logo-width-mobile);
+      max-width: var(--brandbar-logo-width-mobile);
       object-fit: contain;
       display: block;
     }
@@ -735,6 +737,16 @@
       "step": 4,
       "unit": "px",
       "default": 152
+    },
+    {
+      "type": "range",
+      "id": "mobile_logo_width",
+      "label": "Logo width — mobile",
+      "min": 40,
+      "max": 240,
+      "step": 4,
+      "unit": "px",
+      "default": 120
     },
     {
       "type": "header",
