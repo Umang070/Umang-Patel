@@ -14,9 +14,10 @@
     "header_section": {
       "type": "header",
       "settings": {
+        "logo_image": "shopify://shop_images/Group_1000007777.png",
         "logo_text": "TISSO VISION",
         "logo_link": "/",
-        "logo_width": 152,
+        "logo_width": 104,
         "message_text": "Find the ideal gift for your loved ones.",
         "message_color": "#1a1a1a",
         "button_label": "CHOOSE GIFT",
