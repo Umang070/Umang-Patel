@@ -1,25 +1,33 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "type": "header",
   "name": "Header",
   "sections": {
     "header_section": {
       "type": "header",
-      "blocks": {},
       "settings": {
         "logo_text": "TISSO VISION",
-        "logo_link": "",
+        "logo_link": "/",
         "logo_width": 152,
         "message_text": "Find the ideal gift for your loved ones.",
         "message_color": "#1a1a1a",
         "button_label": "CHOOSE GIFT",
         "button_link": "",
-        "button_background": "#FFF544",
+        "button_background": "#fff544",
         "button_text_color": "#1a1a1a",
         "button_width": 204,
+        "header_background": "#f5f5f5",
         "bar_height": 64,
         "section_width": "full-width",
         "color_scheme": "scheme-1",
-        "header_background": "#F5F5F5",
         "border_width": 0,
         "enable_sticky_header": "always"
       }
