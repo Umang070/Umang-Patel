@@ -128,6 +128,81 @@
         </div>
 
       </div>
+
+      {%- comment -%}
+        Mobile layout: hamburger + logo row, followed by an expanding drawer.
+        Both elements are hidden on desktop via CSS.
+      {%- endcomment -%}
+      <div class="brandbar__mobile-bar">
+        <button
+          class="brandbar__hamburger"
+          type="button"
+          aria-label="Toggle menu"
+          aria-expanded="false"
+          aria-controls="brandbar-mobile-drawer-{{ section.id }}"
+        >
+          <span class="brandbar__hamburger-open" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="12" viewBox="0 0 20 12" fill="none">
+              <path d="M1 6H19" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M1 1H19" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M1 11H19" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span class="brandbar__hamburger-close" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M1 1L15 15" stroke="black" stroke-width="2" stroke-linecap="round"/>
+              <path d="M15 1L1 15" stroke="black" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </span>
+        </button>
+
+        <span class="brandbar__mobile-logo-text">
+          {% if section.settings.logo_image != blank %}
+            {{
+              section.settings.logo_image
+              | image_url: width: 400
+              | image_tag:
+                class: 'brandbar__mobile-logo-image',
+                loading: 'eager',
+                alt: section.settings.logo_image.alt | default: logo_text
+            }}
+          {% else %}
+            {{ logo_text }}
+          {% endif %}
+        </span>
+
+        <span class="brandbar__hamburger-spacer" aria-hidden="true"></span>
+      </div>
+
+      <div
+        class="brandbar__mobile-drawer"
+        id="brandbar-mobile-drawer-{{ section.id }}"
+        aria-hidden="true"
+      >
+        <div class="brandbar__drawer-content">
+          <p class="brandbar__drawer-message">{{ message_text }}</p>
+          {% if button_link != blank %}
+            <a class="brandbar__drawer-cta" href="{{ button_link }}">
+              <span class="brandbar__drawer-cta-label">{{ button_label }}</span>
+              <span class="brandbar__drawer-cta-icon" aria-hidden="true">
+                <svg width="29" height="12" viewBox="0 0 29 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M0.75 4.77298L6.72657e-08 4.77298L-6.72657e-08 6.27298L0.75 6.27298L0.75 4.77298ZM28.6378 6.05331C28.9307 5.76042 28.9307 5.28555 28.6378 4.99265L23.8649 0.219681C23.572 -0.0732126 23.0971 -0.0732126 22.8042 0.219681C22.5113 0.512574 22.5113 0.987448 22.8042 1.28034L27.0469 5.52298L22.8042 9.76562C22.5113 10.0585 22.5113 10.5334 22.8042 10.8263C23.0971 11.1192 23.572 11.1192 23.8649 10.8263L28.6378 6.05331ZM0.75 6.27298L28.1075 6.27298L28.1075 4.77298L0.75 4.77298L0.75 6.27298Z" fill="currentColor"/>
+                </svg>
+              </span>
+            </a>
+          {% else %}
+            <span class="brandbar__drawer-cta brandbar__drawer-cta--disabled">
+              <span class="brandbar__drawer-cta-label">{{ button_label }}</span>
+              <span class="brandbar__drawer-cta-icon" aria-hidden="true">
+                <svg width="29" height="12" viewBox="0 0 29 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M0.75 4.77298L6.72657e-08 4.77298L-6.72657e-08 6.27298L0.75 6.27298L0.75 4.77298ZM28.6378 6.05331C28.9307 5.76042 28.9307 5.28555 28.6378 4.99265L23.8649 0.219681C23.572 -0.0732126 23.0971 -0.0732126 22.8042 0.219681C22.5113 0.512574 22.5113 0.987448 22.8042 1.28034L27.0469 5.52298L22.8042 9.76562C22.5113 10.0585 22.5113 10.5334 22.8042 10.8263C23.0971 11.1192 23.572 11.1192 23.8649 10.8263L28.6378 6.05331ZM0.75 6.27298L28.1075 6.27298L28.1075 4.77298L0.75 4.77298L0.75 6.27298Z" fill="currentColor"/>
+                </svg>
+              </span>
+            </span>
+          {% endif %}
+        </div>
+      </div>
+
     </div>
   </div>
 </header-component>
@@ -167,9 +242,9 @@
 
   .header-section:has(> #header-component[sticky='always']),
   .header-section:has(> #header-component[sticky='scroll-up'][data-sticky-state='active']) {
-    position: sticky;
-    top: -1px;
-    z-index: var(--layer-sticky);
+    position: relative;
+    top: auto;
+    z-index: var(--layer-heightened);
   }
 
   .header[data-sticky-state] {
@@ -209,7 +284,7 @@
     border-bottom: var(--border-bottom-width) solid var(--color-border);
   }
 
-  /* ── Brand bar layout ── */
+  /* ── Brand bar — desktop: [logo | message | CTA] ── */
 
   .brandbar {
     height: var(--brandbar-height);
@@ -219,6 +294,7 @@
     --padding-block-end: 0px;
   }
 
+  /* Three equal columns: logo left, message centred, CTA right */
   .brandbar__inner {
     width: 100%;
     display: grid;
@@ -227,7 +303,6 @@
     column-gap: var(--gap-xl);
   }
 
-  /* Logo */
   .brandbar__logo {
     justify-self: start;
     display: flex;
@@ -272,7 +347,7 @@
     white-space: nowrap;
   }
 
-  /* Center message */
+  /* ── Center message ── */
   .brandbar__message {
     justify-self: center;
     min-width: 0;
@@ -297,7 +372,7 @@
     text-overflow: ellipsis;
   }
 
-  /* CTA button */
+  /* ── CTA button ── */
   .brandbar__cta {
     justify-self: end;
     display: flex;
@@ -379,20 +454,179 @@
     }
   }
 
-  /* Mobile: hide logo + CTA, center the message */
+  /* Mobile-specific elements are hidden on desktop */
+  .brandbar__mobile-bar,
+  .brandbar__mobile-drawer {
+    display: none;
+  }
+
+  /* ── Mobile layout ──────────────────────────────────────────────────────────
+   * The desktop 3-column inner bar is hidden. A simplified bar replaces it:
+   *   [hamburger | logo (centred) | spacer]
+   * Tapping the hamburger expands a drawer below the bar by animating its
+   * height from 0 to scrollHeight, pushing page content down naturally.
+   * ─────────────────────────────────────────────────────────────────────────── */
   @media screen and (max-width: 749px) {
-    .brandbar__inner {
-      grid-template-columns: 1fr;
+    /* Height is auto so the bar can grow when the drawer is open */
+    .brandbar {
+      height: auto;
+      flex-direction: column;
+      align-items: stretch;
     }
 
-    .brandbar__logo,
-    .brandbar__cta {
+    .brandbar__inner {
       display: none;
     }
 
-    .brandbar__message {
-      justify-self: center;
-      max-width: 100%;
+    /* Three-column bar: equal-width icon columns keep the logo perfectly centred */
+    .brandbar__mobile-bar {
+      display: grid;
+      grid-template-columns: 44px 1fr 44px;
+      align-items: center;
+      height: var(--brandbar-height);
+      padding-inline: 16px;
+      box-shadow: 0px 2px 4px 0px transparent;
+      transition: box-shadow 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+      z-index: 999;
+    }
+
+    .brandbar.is-open .brandbar__mobile-bar {
+      box-shadow: 0px 2px 4px 0px #00000026;
+    }
+
+    /* ── Hamburger / close toggle ── */
+    .brandbar__hamburger {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      color: inherit;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .brandbar__hamburger-open,
+    .brandbar__hamburger-close {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .brandbar__hamburger-close {
+      display: none;
+    }
+
+    .brandbar.is-open .brandbar__hamburger-open {
+      display: none;
+    }
+
+    .brandbar.is-open .brandbar__hamburger-close {
+      display: inline-flex;
+    }
+
+    .brandbar__mobile-logo-text {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-weight: 700;
+      font-size: 20px;
+      letter-spacing: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .brandbar__mobile-logo-image {
+      height: calc(var(--brandbar-height) - 24px);
+      width: auto;
+      max-width: 180px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .brandbar__hamburger-spacer {
+      width: 44px;
+    }
+
+    /* ── Expanding drawer ──────────────────────────────────────────────────────
+     * Height is animated from 0 → scrollHeight via JavaScript, so the browser
+     * can perform a hardware-accelerated layout animation without fixed heights.
+     * ─────────────────────────────────────────────────────────────────────────── */
+    .brandbar__mobile-drawer {
+      display: block;
+      height: 0;
+      overflow: hidden;
+      transition: height 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+
+    .brandbar__drawer-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      padding: 24px 20px 32px;
+      text-align: center;
+      background-color: #f2f2f2;
+    }
+
+    .brandbar__drawer-message {
+      font-family: 'Jost', sans-serif;
+      font-weight: 400;
+      font-size: 16px;
+      line-height: 1.4;
+      letter-spacing: 0;
+      color: var(--brandbar-message-color, inherit);
+      margin: 0;
+    }
+
+    .brandbar__drawer-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      padding-block: 14px;
+      padding-inline: 24px;
+      background: var(--brandbar-cta-bg);
+      color: var(--brandbar-cta-text);
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .brandbar__drawer-cta-label {
+      font-family: 'Jost', sans-serif;
+      font-weight: 400;
+      font-size: 16px;
+      line-height: 20.48px;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    .brandbar__drawer-cta-icon {
+      width: 29px;
+      height: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: transform 0.2s ease;
+    }
+
+    @media (hover: hover) {
+      .brandbar__drawer-cta:hover {
+        transform: translateY(-1px);
+      }
+
+      .brandbar__drawer-cta:hover .brandbar__drawer-cta-icon {
+        transform: translateX(3px);
+      }
     }
   }
 {% endstylesheet %}
@@ -405,6 +639,65 @@
     hydrate('{{ section.id }}', url);
   </script>
 {% endunless %}
+
+<script>
+(function () {
+  function initMobileMenu() {
+    var brandbar  = document.querySelector('.brandbar');
+    var hamburger = document.querySelector('.brandbar__hamburger');
+    var drawer    = document.getElementById('brandbar-mobile-drawer-{{ section.id }}');
+    if (!brandbar || !hamburger || !drawer) return;
+
+    function openMenu() {
+      brandbar.classList.add('is-open');
+      hamburger.setAttribute('aria-expanded', 'true');
+      drawer.setAttribute('aria-hidden', 'false');
+      // Measure actual content height so the CSS transition animates to the exact target
+      var inner = drawer.querySelector('.brandbar__drawer-content');
+      drawer.style.height = (inner ? inner.scrollHeight : 160) + 'px';
+    }
+
+    function closeMenu() {
+      brandbar.classList.remove('is-open');
+      hamburger.setAttribute('aria-expanded', 'false');
+      drawer.setAttribute('aria-hidden', 'true');
+      drawer.style.height = '0';
+    }
+
+    hamburger.addEventListener('click', function () {
+      if (brandbar.classList.contains('is-open')) {
+        closeMenu();
+      } else {
+        openMenu();
+      }
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && brandbar.classList.contains('is-open')) {
+        closeMenu();
+        hamburger.focus();
+      }
+    });
+
+    // Reset state when the viewport is resized back to desktop
+    var mq = window.matchMedia('(min-width: 750px)');
+    function onBreakpoint(e) {
+      if (e.matches) closeMenu();
+    }
+    if (mq.addEventListener) {
+      mq.addEventListener('change', onBreakpoint);
+    } else {
+      mq.addListener(onBreakpoint); // Safari < 14 fallback
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMobileMenu);
+  } else {
+    initMobileMenu();
+  }
+})();
+</script>
 
 {% schema %}
 {
@@ -430,7 +723,8 @@
     {
       "type": "url",
       "id": "logo_link",
-      "label": "Logo link"
+      "label": "Logo link",
+      "info": "Leave blank to make the logo non-clickable"
     },
     {
       "type": "range",
