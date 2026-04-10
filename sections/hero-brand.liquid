@@ -389,10 +389,17 @@
       display: none;
     }
 
-    /* CTA centred near the bottom of the image — animations disabled on mobile */
+    /* CTA centred near the bottom of the image — all animations disabled on mobile */
     .hero-brand__btn--on-image,
     .hero-brand__btn--on-image .hero-brand__btn-icon {
       transition: none;
+    }
+
+    /* Cancel hover effects even when a pointer device is present on mobile */
+    .hero-brand__btn--on-image:hover,
+    .hero-brand__btn--on-image:hover .hero-brand__btn-icon {
+      transform: none;
+      opacity: 1;
     }
 
     .hero-brand__btn--on-image {
