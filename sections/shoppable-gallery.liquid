@@ -1,13 +1,58 @@
+{%- comment -%}
+  ============================================================================
+  SECTION: Shoppable Gallery  (sections/shoppable-gallery.liquid)
+  ============================================================================
+
+  Layout:
+    Desktop — configurable N-column grid (2–4 cols) with custom image height
+              and gap; grid items fade + slide up on scroll (row by row).
+    Mobile  — forced 2-column grid with independent image height and gap
+              settings. Pin positions can also be set per-block for mobile.
+
+  Quick-view modal:
+    • Product data is fetched via Shopify's /products/handle.js AJAX API.
+    • All products are prefetched when the section enters the viewport
+      (400 px root margin) to eliminate loading delays on pin click.
+    • Colour variants use a sliding highlight indicator.
+    • Size variants use a custom animated dropdown (max 3 options visible,
+      scrollable beyond that).
+    • On add-to-cart success: shows "ADDED!" for 700 ms, then closes the
+      modal (or redirects to /cart if the setting is enabled).
+
+  Auto-bundle rule:
+    When a variant matching the configured trigger colour AND trigger size is
+    added to cart, a second bundle variant ID is automatically included in
+    the same cart/add.js request. Matching is fuzzy (case-insensitive,
+    starts-with) so "M" matches "Medium" and vice-versa.
+
+  Schema settings (section):
+    Grid     — heading, columns, image height, gap (desktop + mobile)
+    Cart     — redirect to cart checkbox
+    Bundle   — trigger colour, trigger size, bundle variant ID
+    Appearance — background colour, heading colour
+
+  Schema settings (block — per product):
+    Product        — product picker, optional custom image override
+    Pin position   — X/Y % sliders for desktop and mobile independently
+  ============================================================================
+{%- endcomment -%}
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500&family=Lustria&display=swap" rel="stylesheet">
 
 <section
   class="sg"
+  data-redirect-to-cart="{{ section.settings.redirect_to_cart }}"
+  data-bundle-trigger-color="{{ section.settings.bundle_trigger_color | downcase | strip }}"
+  data-bundle-trigger-size="{{ section.settings.bundle_trigger_size | downcase | strip }}"
+  data-bundle-variant-id="{{ section.settings.bundle_variant_id | strip }}"
   style="
     --sg-bg: {{ section.settings.background_color }};
     --sg-text: {{ section.settings.text_color }};
     --sg-gap: {{ section.settings.grid_gap }}px;
+    --sg-gap-mobile: {{ section.settings.mobile_grid_gap }}px;
+    --sg-img-height-mobile: {{ section.settings.mobile_image_height }}px;
     --sg-cols: {{ section.settings.columns }};
     --sg-img-height: {{ section.settings.image_height }}px;
   "
@@ -50,13 +95,13 @@
             type="button"
             data-handle="{{ product.handle }}"
             aria-label="Quick view {{ product.title }}"
-            style="left: {{ block.settings.pin_x }}%; top: {{ block.settings.pin_y }}%;"
+            style="left: {{ block.settings.pin_x }}%; top: {{ block.settings.pin_y }}%; --pin-x-mobile: {{ block.settings.mobile_pin_x }}%; --pin-y-mobile: {{ block.settings.mobile_pin_y }}%;"
           >
         {% else %}
           <span
             class="sg__pin"
             aria-hidden="true"
-            style="left: {{ block.settings.pin_x }}%; top: {{ block.settings.pin_y }}%;"
+            style="left: {{ block.settings.pin_x }}%; top: {{ block.settings.pin_y }}%; --pin-x-mobile: {{ block.settings.mobile_pin_x }}%; --pin-y-mobile: {{ block.settings.mobile_pin_y }}%;"
           >
         {% endif %}
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -72,7 +117,6 @@
     {% endfor %}
   </div>
 
-  <!-- Quick-view modal -->
   <div class="sg-qv" id="sg-qv-{{ section.id }}" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Quick view">
     <div class="sg-qv__backdrop"></div>
     <div class="sg-qv__card">
@@ -201,9 +245,7 @@
     }
   }
 
-  /* ════════════════════════════════
-     Quick-view modal
-  ════════════════════════════════ */
+  /* ── Quick-view modal ── */
   .sg-qv {
     display: none;
     position: fixed;
@@ -217,28 +259,30 @@
     display: flex;
   }
 
-  /* Backdrop */
+  /* ── Backdrop ── */
   .sg-qv__backdrop {
     position: absolute;
     inset: 0;
     background: rgba(0, 0, 0, 0.25);
     cursor: pointer;
     opacity: 0;
-    animation: sgBackdropIn 0.28s ease forwards;
+    animation: sgBackdropIn 0.35s ease forwards;
   }
 
   .sg-qv.is-closing .sg-qv__backdrop {
-    animation: sgBackdropOut 0.24s ease forwards;
+    animation: sgBackdropOut 0.22s ease forwards;
   }
 
   @keyframes sgBackdropIn {
-    to { opacity: 1; }
+    from { opacity: 0; }
+    to   { opacity: 1; }
   }
   @keyframes sgBackdropOut {
-    to { opacity: 0; }
+    from { opacity: 1; }
+    to   { opacity: 0; }
   }
 
-  /* Card */
+  /* ── Card ── */
   .sg-qv__card {
     position: relative;
     background: #fff;
@@ -247,12 +291,11 @@
     padding: 35px 20px 20px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
     max-height: 90vh;
     overflow-y: auto;
     opacity: 0;
-    transform: translateY(20px) scale(0.98);
-    animation: sgCardIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    transform: translateY(28px) scale(0.97);
+    animation: sgCardIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
 
   .sg-qv.is-closing .sg-qv__card {
@@ -260,13 +303,15 @@
   }
 
   @keyframes sgCardIn {
-    to { opacity: 1; transform: translateY(0) scale(1); }
+    from { opacity: 0; transform: translateY(28px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
   }
   @keyframes sgCardOut {
-    to { opacity: 0; transform: translateY(16px) scale(0.97); }
+    from { opacity: 1; transform: translateY(0) scale(1); }
+    to   { opacity: 0; transform: translateY(20px) scale(0.97); }
   }
 
-  /* Close */
+  /* ── Close button ── */
   .sg-qv__close {
     position: absolute;
     top: 14px;
@@ -282,17 +327,18 @@
     padding: 0;
   }
 
-  /* Top row: image + info */
+  /* ── Top row: thumbnail + product info ── */
   .sg-qv__top {
     display: flex;
-    gap: 16px;
+    gap: 8px;
+    margin-bottom: 10px;
     align-items: flex-start;
   }
 
   .sg-qv__img-wrap {
     flex-shrink: 0;
     width: 120px;
-    height: 140px;
+    height: 155px;
     overflow: hidden;
     background: #f5f5f5;
   }
@@ -308,7 +354,7 @@
   .sg-qv__info {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 12px;
     flex: 1;
   }
 
@@ -322,7 +368,6 @@
     vertical-align: middle;
     margin: 0;
     color: #1a1a1a;
-    margin-bottom: 20px;
   }
 
   .sg-qv__price {
@@ -335,7 +380,6 @@
     vertical-align: middle;
     margin: 0;
     color: #1a1a1a;
-    margin-bottom: 12px;
   }
 
   .sg-qv__desc {
@@ -348,13 +392,14 @@
     vertical-align: middle;
     margin: 0;
     color: #555;
-    display: -webkit-box;
-    -webkit-line-clamp: 4;
-    -webkit-box-orient: vertical;
+    max-height: 94px;
     overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 6;
   }
 
-  /* Options */
+  /* ── Variant options ── */
   .sg-qv__options {
     display: flex;
     flex-direction: column;
@@ -374,9 +419,10 @@
     line-height: 1;
     color: #1a1a1a;
     text-transform: capitalize;
+    margin: 0;
   }
 
-  /* Color buttons */
+  /* ── Colour variant selector ── */
   .sg-qv__color-row {
     position: relative;
     display: flex;
@@ -401,8 +447,11 @@
   .sg-qv__color-btn {
     font-family: 'Jost', sans-serif;
     font-weight: 400;
-    font-size: 14px;
-    line-height: 1;
+    font-style: normal;
+    font-size: 18px;
+    line-height: 100%;
+    letter-spacing: -0.02em;
+    text-transform: capitalize;
     flex: 1 1 0;
     padding: 14px 16px;
     background: transparent;
@@ -423,35 +472,54 @@
     color: #fff;
   }
 
-  /* Size custom dropdown */
+  /* ── Size variant selector (custom dropdown) ── */
   .sg-qv__size-wrap {
     position: relative;
     user-select: none;
+    margin-bottom: 50px;
   }
 
   .sg-qv__size-trigger {
     font-family: 'Jost', sans-serif;
     font-weight: 400;
-    font-size: 14px;
-    line-height: 1;
+    font-style: normal;
+    font-size: 16px;
+    line-height: 100%;
+    letter-spacing: -0.02em;
+    vertical-align: middle;
     width: 100%;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 14px 16px;
+    padding: 0;
+    padding-left: 16px;
     border: 1px solid #d0d0d0;
     background: #fff;
     color: #1a1a1a;
     cursor: pointer;
     text-align: left;
+    gap: 0;
   }
 
   .sg-qv__size-trigger-text {
+    flex: 1;
+    padding-block: 14px;
+    text-align: left;
     transition: opacity 0.15s ease;
+  }
+
+  .sg-qv__size-trigger-text.is-selected {
+    text-align: center;
   }
 
   .sg-qv__size-chevron {
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    align-self: stretch;
+    border-left: 1px solid #d0d0d0;
     transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
     color: #1a1a1a;
   }
@@ -469,11 +537,25 @@
     border: 1px solid #d0d0d0;
     border-top: none;
     z-index: 20;
-    overflow: hidden;
+    max-height: calc(3 * 49px);
+    overflow-y: auto;
+    overflow-x: hidden;
     opacity: 0;
     transform: translateY(-6px);
     pointer-events: none;
     transition: opacity 0.2s ease, transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+    scrollbar-width: thin;
+    scrollbar-color: #d0d0d0 transparent;
+  }
+
+  .sg-qv__size-list::-webkit-scrollbar {
+    width: 4px;
+  }
+  .sg-qv__size-list::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .sg-qv__size-list::-webkit-scrollbar-thumb {
+    background: #d0d0d0;
   }
 
   .sg-qv__size-wrap.is-open .sg-qv__size-list {
@@ -509,7 +591,7 @@
     color: #fff;
   }
 
-  /* Add to cart */
+  /* ── Add-to-cart footer ── */
   .sg-qv__footer {
     margin-top: 4px;
   }
@@ -560,21 +642,40 @@
 
   /* ── Mobile ── */
   @media screen and (max-width: 749px) {
+    .sg-qv__img-wrap {
+      height: 140px;
+    }
+
     .sg__grid {
       grid-template-columns: repeat(2, 1fr);
-      gap: 2px;
+      gap: var(--sg-gap-mobile);
       padding-inline: 16px;
     }
 
+    .sg__item {
+      height: var(--sg-img-height-mobile);
+    }
+
+    .sg__pin {
+      left: var(--pin-x-mobile) !important;
+      top:  var(--pin-y-mobile) !important;
+    }
+
     .sg__heading {
-      font-size: 28px;
-      padding: 24px 16px 16px 16px;
+      font-family: 'Lustria', serif;
+      font-weight: 400;
+      font-size: 24px;
+      line-height: 120%;
+      letter-spacing: 0px;
+      vertical-align: middle;
+      text-align: center;
+      padding: 40px 16px 20px;
     }
 
     .sg-qv__card {
       max-width: 100%;
       margin: 16px;
-      padding: 24px 20px 20px;
+      padding: 24px 20px 25px;
     }
   }
 {% endstylesheet %}
@@ -586,7 +687,11 @@
   const sgSection = grid && grid.closest('.sg');
   if (!grid || !modal || !sgSection) return;
 
-  const moneyFormat = {{ shop.money_format | json }};
+  const moneyFormat         = {{ shop.money_format | json }};
+  const redirectToCart      = sgSection.dataset.redirectToCart === 'true';
+  const bundleTriggerColor  = sgSection.dataset.bundleTriggerColor;
+  const bundleTriggerSize   = sgSection.dataset.bundleTriggerSize;
+  const bundleVariantId     = sgSection.dataset.bundleVariantId;
 
   /* ── Scroll reveal ── */
   const items = Array.from(grid.querySelectorAll('.sg__item'));
@@ -602,6 +707,7 @@
       el.style.transitionDelay = (colIdx * 0.08) + 's';
     });
   });
+  // Only reveal a row when it actually enters the viewport from below
   const revealObserver = new IntersectionObserver(function (entries) {
     entries.forEach(function (entry) {
       if (!entry.isIntersecting) return;
@@ -611,13 +717,9 @@
       }
       revealObserver.unobserve(entry.target);
     });
-  }, { threshold: 0.05, rootMargin: '0px 0px 60px 0px' });
-  rows.forEach(function (row) { revealObserver.observe(rowMap[row][0]); });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
 
-  // Fallback: reveal everything if already in view after a short delay
-  setTimeout(function () {
-    items.forEach(function (el) { el.classList.add('is-visible'); });
-  }, 300);
+  rows.forEach(function (row) { revealObserver.observe(rowMap[row][0]); });
 
   /* ── Modal state ── */
   let currentProduct = null;
@@ -687,9 +789,14 @@
     if (!currentProduct || !currentProduct.options || currentProduct.options.length === 0) return;
 
     // Skip the dummy "Title" option on single-variant products
-    const opts = currentProduct.options.filter(function (opt) {
-      return optionName(opt) !== 'Title';
-    });
+    // Sort so colour options always render before size/other options
+    const opts = currentProduct.options
+      .filter(function (opt) { return optionName(opt) !== 'Title'; })
+      .sort(function (a, b) {
+        const isColorA = /colou?r/i.test(optionName(a)) ? 0 : 1;
+        const isColorB = /colou?r/i.test(optionName(b)) ? 0 : 1;
+        return isColorA - isColorB;
+      });
     if (opts.length === 0) return;
 
     opts.forEach(function (opt, optIdx) {
@@ -710,7 +817,6 @@
         const row = document.createElement('div');
         row.className = 'sg-qv__color-row';
 
-        // Sliding indicator element
         const slider = document.createElement('div');
         slider.className = 'sg-qv__color-slider';
         row.appendChild(slider);
@@ -781,7 +887,6 @@
         const wrap = document.createElement('div');
         wrap.className = 'sg-qv__size-wrap';
 
-        // Trigger button
         const trigger = document.createElement('button');
         trigger.type = 'button';
         trigger.className = 'sg-qv__size-trigger';
@@ -792,12 +897,11 @@
 
         const chevron = document.createElement('span');
         chevron.className = 'sg-qv__size-chevron';
-        chevron.innerHTML = '<svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L6 6L11 1" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        chevron.innerHTML = '<svg width="15" height="9" viewBox="0 0 15 9" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.06067 1.06067L7.06067 7.06067L13.0607 1.06067" stroke="black" stroke-width="1.5" stroke-linecap="square"/></svg>';
 
         trigger.appendChild(triggerText);
         trigger.appendChild(chevron);
 
-        // Options list
         const list = document.createElement('div');
         list.className = 'sg-qv__size-list';
         list.setAttribute('aria-hidden', 'true');
@@ -813,10 +917,9 @@
             sizeSelected = val;
             selectedOptions[name] = val;
 
-            // Update trigger text to selected value
             triggerText.textContent = val;
+            triggerText.classList.add('is-selected');
 
-            // Update selected highlight
             list.querySelectorAll('.sg-qv__size-opt').forEach(function (o) {
               o.classList.toggle('is-selected', o.textContent === val);
             });
@@ -829,8 +932,9 @@
         });
 
         function openDropdown() {
-          // Reset trigger text to placeholder when opening
+          // Show placeholder left-aligned when open
           triggerText.textContent = placeholder;
+          triggerText.classList.remove('is-selected');
           wrap.classList.add('is-open');
           list.setAttribute('aria-hidden', 'false');
         }
@@ -838,8 +942,14 @@
         function closeDropdown() {
           wrap.classList.remove('is-open');
           list.setAttribute('aria-hidden', 'true');
-          // Restore selected value or placeholder after dropdown closes
-          triggerText.textContent = sizeSelected || placeholder;
+          // Restore: selected value centered, or placeholder left-aligned
+          if (sizeSelected) {
+            triggerText.textContent = sizeSelected;
+            triggerText.classList.add('is-selected');
+          } else {
+            triggerText.textContent = placeholder;
+            triggerText.classList.remove('is-selected');
+          }
         }
 
         trigger.addEventListener('click', function (e) {
@@ -855,7 +965,6 @@
           }
         });
 
-        // Close on outside click
         document.addEventListener('click', function onOutside(e) {
           if (!wrap.contains(e.target)) {
             if (wrap.classList.contains('is-open')) closeDropdown();
@@ -963,16 +1072,15 @@
     if (!modal.classList.contains('is-open')) return;
     modal.classList.add('is-closing');
 
-    const card = modal.querySelector('.sg-qv__card');
-    card.addEventListener('animationend', function onClose() {
-      card.removeEventListener('animationend', onClose);
+    // Wait for exit animations (0.22s) then clean up
+    setTimeout(function () {
       modal.classList.remove('is-open', 'is-closing');
       modal.setAttribute('aria-hidden', 'true');
       document.body.style.overflow = '';
       currentProduct = null;
       selectedOptions = {};
       currentVariant = null;
-    }, { once: true });
+    }, 240);
   }
 
   /* ── Add to cart ── */
@@ -981,19 +1089,49 @@
     elAtc.disabled = true;
     elAtcLbl.textContent = 'ADDING…';
 
+    // Build items array — always includes the selected variant
+    var items = [{ id: currentVariant.id, quantity: 1 }];
+
+    // Auto-bundle: when both the trigger colour and size match, silently add
+    // the configured bundle variant alongside the selected product variant.
+    if (bundleVariantId) {
+      var optionValues = Object.values(selectedOptions).map(function (v) {
+        return v.toLowerCase().trim();
+      });
+
+      // Fuzzy match so "M" matches "medium" and vice-versa (starts-with comparison).
+      function fuzzyMatch(trigger, values) {
+        if (!trigger) return true;
+        return values.some(function (v) {
+          return v === trigger || v.indexOf(trigger) === 0 || trigger.indexOf(v) === 0;
+        });
+      }
+
+      var colorMatch = fuzzyMatch(bundleTriggerColor, optionValues);
+      var sizeMatch  = fuzzyMatch(bundleTriggerSize,  optionValues);
+
+      if (colorMatch && sizeMatch) {
+        items.push({ id: parseInt(bundleVariantId, 10), quantity: 1 });
+      }
+    }
+
     fetch('/cart/add.js', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ items: [{ id: currentVariant.id, quantity: 1 }] })
+      body: JSON.stringify({ items: items })
     })
       .then(function (r) { return r.json(); })
       .then(function () {
+        document.dispatchEvent(new CustomEvent('cart:refresh'));
         elAtcLbl.textContent = 'ADDED!';
+
         setTimeout(function () {
-          elAtcLbl.textContent = 'ADD TO CART';
-          elAtc.disabled = false;
-          document.dispatchEvent(new CustomEvent('cart:refresh'));
-        }, 1400);
+          if (redirectToCart) {
+            window.location.href = '/cart';
+          } else {
+            closeModal();
+          }
+        }, 700);
       })
       .catch(function () {
         elAtcLbl.textContent = 'ADD TO CART';
@@ -1056,6 +1194,25 @@
       "default": 20
     },
     {
+      "type": "range",
+      "id": "mobile_grid_gap",
+      "label": "Gap between images — mobile (px)",
+      "min": 0,
+      "max": 24,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "mobile_image_height",
+      "label": "Image height — mobile (px)",
+      "min": 100,
+      "max": 400,
+      "step": 4,
+      "unit": "px",
+      "default": 188
+    },
+    {
       "type": "color",
       "id": "background_color",
       "label": "Background",
@@ -1066,6 +1223,42 @@
       "id": "text_color",
       "label": "Heading color",
       "default": "#1a1a1a"
+    },
+    {
+      "type": "header",
+      "content": "Cart behaviour"
+    },
+    {
+      "type": "checkbox",
+      "id": "redirect_to_cart",
+      "label": "Go to cart after adding",
+      "info": "Takes the customer to the cart page after a successful add to cart",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Auto-bundle rule"
+    },
+    {
+      "type": "text",
+      "id": "bundle_trigger_color",
+      "label": "Trigger colour value",
+      "info": "Exact colour option value that triggers the bundle (e.g. Black)",
+      "default": "Black"
+    },
+    {
+      "type": "text",
+      "id": "bundle_trigger_size",
+      "label": "Trigger size value",
+      "info": "Size option value that triggers the bundle (e.g. M or Medium)",
+      "default": "M"
+    },
+    {
+      "type": "text",
+      "id": "bundle_variant_id",
+      "label": "Bundle variant ID to auto-add",
+      "info": "Shopify variant ID added automatically when the trigger conditions match",
+      "default": "45895095189665"
     }
   ],
   "blocks": [
@@ -1101,6 +1294,30 @@
           "type": "range",
           "id": "pin_y",
           "label": "Vertical position",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 50
+        },
+        {
+          "type": "header",
+          "content": "Pin position — mobile"
+        },
+        {
+          "type": "range",
+          "id": "mobile_pin_x",
+          "label": "Horizontal position (mobile)",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 50
+        },
+        {
+          "type": "range",
+          "id": "mobile_pin_y",
+          "label": "Vertical position (mobile)",
           "min": 0,
           "max": 100,
           "step": 1,

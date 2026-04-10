@@ -1,3 +1,30 @@
+{%- comment -%}
+  ============================================================================
+  SECTION: Hero Brand  (sections/hero-brand.liquid)
+  ============================================================================
+  
+  Layout:
+    Desktop — CSS grid overlay: image fills the section height, title +
+              subtitle + CTA are pinned to the bottom-left of the same cell.
+    Mobile  — Flexbox column: title and subtitle render above the image;
+              the CTA button is absolutely positioned over the image bottom.
+
+  Key features:
+    • Separate desktop and mobile images (mobile image overrides on ≤749 px).
+    • Separate desktop and mobile rich-text subtitles.
+    • CTA button duplicated in HTML: one inside .hero-brand__content (desktop),
+      one inside .hero-brand__media (mobile on-image placement).
+    • Bottom ticker bar with configurable text, background and text colour.
+
+  Schema settings:
+    Content  — heading, subtitle (richtext), mobile subtitle (richtext)
+    Button   — label, link, background colour, text colour
+    Image    — desktop image picker, mobile image picker
+    Bottom bar — ticker text, background colour, text colour
+    Appearance — section background, text colour
+  ============================================================================
+{%- endcomment -%}
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&display=swap" rel="stylesheet">
@@ -15,33 +42,71 @@
 >
   <div class="hero-brand__body">
 
-    <!-- Full-width background image -->
-    <div class="hero-brand__media" aria-hidden="true">
-      {% if section.settings.image != blank %}
+    {%- assign mobile_image = section.settings.mobile_image -%}
+    {%- assign desktop_image = section.settings.image -%}
+
+    {%- comment -%}
+      Desktop: title, subtitle and CTA overlay the image (bottom-left).
+      On mobile these are reordered above the image via flexbox order.
+    {%- endcomment -%}
+    <div class="hero-brand__content">
+      <h2 class="hero-brand__heading">{{ section.settings.heading }}</h2>
+      <div class="hero-brand__subtitle hero-brand__subtitle--desktop">{{ section.settings.subtitle }}</div>
+      {%- if section.settings.mobile_subtitle != blank -%}
+        <div class="hero-brand__subtitle hero-brand__subtitle--mobile">{{ section.settings.mobile_subtitle }}</div>
+      {%- endif -%}
+
+      {% if section.settings.button_label != blank %}
+        <a
+          class="hero-brand__btn hero-brand__btn--desktop"
+          href="{{ section.settings.button_link | default: '#' }}"
+        >
+          <span class="hero-brand__btn-label">{{ section.settings.button_label }}</span>
+          <span class="hero-brand__btn-icon" aria-hidden="true">
+            <svg width="29" height="12" viewBox="0 0 29 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0.75 4.77298L6.72657e-08 4.77298L-6.72657e-08 6.27298L0.75 6.27298L0.75 4.77298ZM28.6378 6.05331C28.9307 5.76042 28.9307 5.28555 28.6378 4.99265L23.8649 0.219681C23.572 -0.0732126 23.0971 -0.0732126 22.8042 0.219681C22.5113 0.512574 22.5113 0.987448 22.8042 1.28034L27.0469 5.52298L22.8042 9.76562C22.5113 10.0585 22.5113 10.5334 22.8042 10.8263C23.0971 11.1192 23.572 11.1192 23.8649 10.8263L28.6378 6.05331ZM0.75 6.27298L28.1075 6.27298L28.1075 4.77298L0.75 4.77298L0.75 6.27298Z" fill="currentColor"/>
+            </svg>
+          </span>
+        </a>
+      {% endif %}
+    </div>
+
+    {%- comment -%}
+      Background image. On mobile the CTA button is rendered inside this
+      wrapper so it can be absolutely positioned over the image.
+    {%- endcomment -%}
+    <div class="hero-brand__media">
+      {% if desktop_image != blank %}
         {{
-          section.settings.image
+          desktop_image
           | image_url: width: 2000
           | image_tag:
-            class: 'hero-brand__image',
+            class: 'hero-brand__image hero-brand__image--desktop',
             loading: 'eager',
             alt: '',
             sizes: '100vw'
         }}
       {% else %}
-        <div class="hero-brand__image-placeholder">
+        <div class="hero-brand__image-placeholder hero-brand__image--desktop">
           {{ 'image' | placeholder_svg_tag: 'hero-brand__placeholder-svg' }}
         </div>
       {% endif %}
-    </div>
 
-    <!-- Overlay: text content bottom-left -->
-    <div class="hero-brand__content">
-      <h2 class="hero-brand__heading">{{ section.settings.heading }}</h2>
-      <div class="hero-brand__subtitle">{{ section.settings.subtitle }}</div>
+      {% if mobile_image != blank %}
+        {{
+          mobile_image
+          | image_url: width: 800
+          | image_tag:
+            class: 'hero-brand__image hero-brand__image--mobile',
+            loading: 'eager',
+            alt: '',
+            sizes: '100vw'
+        }}
+      {% endif %}
 
       {% if section.settings.button_label != blank %}
         <a
-          class="hero-brand__btn"
+          class="hero-brand__btn hero-brand__btn--on-image"
           href="{{ section.settings.button_link | default: '#' }}"
         >
           <span class="hero-brand__btn-label">{{ section.settings.button_label }}</span>
@@ -56,7 +121,6 @@
 
   </div>
 
-  <!-- Bottom ticker bar -->
   {% if section.settings.ticker_text != blank %}
     <div class="hero-brand__ticker">
       <span class="hero-brand__ticker-text">{{ section.settings.ticker_text }}</span>
@@ -74,20 +138,22 @@
     overflow: hidden;
   }
 
-  /* ── Body: image drives the height, content overlays bottom-left ── */
+  /*
+   * Both .hero-brand__media and .hero-brand__content share the same named
+   * grid area "hero", so the content layer overlays the image. The image
+   * stays in normal document flow, making the section height image-driven.
+   */
   .hero-brand__body {
     display: grid;
     grid-template-areas: "hero";
   }
 
-  /* ── Image: in normal flow so it sets the section height ── */
   .hero-brand__media {
     grid-area: hero;
     width: 100%;
     overflow: hidden;
   }
 
-  /* ── Content: overlays the same grid cell, pinned bottom-left ── */
   .hero-brand__content {
     grid-area: hero;
     position: relative;
@@ -143,7 +209,7 @@
     font-weight: 600;
   }
 
-  /* ── Button ── */
+  /* ── CTA button ── */
   .hero-brand__btn {
     display: inline-flex;
     align-items: center;
@@ -244,23 +310,98 @@
     text-overflow: ellipsis;
   }
 
-  /* ── Mobile ── */
+  /* Mobile-only elements are hidden on desktop */
+  .hero-brand__image--mobile,
+  .hero-brand__btn--on-image,
+  .hero-brand__subtitle--mobile {
+    display: none;
+  }
+
+  /* ── Mobile layout ─────────────────────────────────────────────────────────
+   * Switches from the desktop grid-overlay to a flex column:
+   *   1. Content block (title + subtitle) — order: 1  → rendered above image
+   *   2. Media block (image + on-image CTA) — order: 2 → rendered below
+   * ────────────────────────────────────────────────────────────────────────── */
   @media screen and (max-width: 749px) {
+
+    .hero-brand__body {
+      display: flex;
+      flex-direction: column;
+    }
+
     .hero-brand__content {
-      padding: 32px 24px 40px;
+      order: 1;
+      position: static;
+      z-index: auto;
+      align-self: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 32px 24px 12px;
+      gap: 24px;
       max-width: 100%;
+    }
+
+    /* Desktop CTA is hidden; the on-image duplicate inside .hero-brand__media
+       is shown instead so it can be absolutely positioned over the image. */
+    .hero-brand__btn--desktop {
+      display: none;
+    }
+
+    .hero-brand__media {
+      order: 2;
+      position: relative; /* establishes containing block for the on-image button */
+      width: 100%;
     }
 
     .hero-brand__heading {
-      font-size: 42px;
+      font-size: 30px;
+      font-weight: 500;
+      line-height: 100%;
+      letter-spacing: 0;
+      text-align: center;
     }
 
+    /* If a mobile-specific subtitle is set, the desktop one is hidden via :has() */
     .hero-brand__subtitle {
-      font-size: 17px;
+      font-size: 16px;
+      line-height: 130%;
+      letter-spacing: 0;
+      text-align: center;
       max-width: 100%;
     }
 
+    .hero-brand__subtitle--mobile {
+      display: block;
+    }
+
+    .hero-brand:has(.hero-brand__subtitle--mobile) .hero-brand__subtitle--desktop {
+      display: none;
+    }
+
+    .hero-brand__image--mobile {
+      display: block;
+    }
+
+    /* If a mobile image is set, hide the desktop image on mobile */
+    .hero-brand:has(.hero-brand__image--mobile) .hero-brand__image--desktop {
+      display: none;
+    }
+
+    /* CTA centred near the bottom of the image */
+    .hero-brand__btn--on-image {
+      display: inline-flex;
+      position: absolute;
+      bottom: 39px;
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+    }
+
     .hero-brand__ticker-text {
+      font-size: 14px;
+      line-height: 13.42px;
       white-space: normal;
       text-align: center;
     }
@@ -286,6 +427,12 @@
       "id": "subtitle",
       "label": "Subtitle",
       "default": "<p>Discover Joy: Your Ultimate Holiday Gift Destination. Explore our curated selection and find the perfect gifts to delight your loved ones this holiday season.</p>"
+    },
+    {
+      "type": "richtext",
+      "id": "mobile_subtitle",
+      "label": "Subtitle (mobile)",
+      "info": "Overrides the subtitle on mobile. Leave blank to use the default subtitle."
     },
     {
       "type": "header",
@@ -322,6 +469,12 @@
       "type": "image_picker",
       "id": "image",
       "label": "Image"
+    },
+    {
+      "type": "image_picker",
+      "id": "mobile_image",
+      "label": "Image (mobile)",
+      "info": "Overrides the image on mobile. Leave blank to use the default image."
     },
     {
       "type": "header",
