@@ -263,6 +263,24 @@
     }
   }
 
+  /*
+   * On mobile the button is centred via left:50% + translateX(-50%).
+   * The desktop hover rule sets transform:translateY(-2px) which replaces
+   * that centering transform and causes the button to jump/shift.
+   * This override restores translateX(-50%) on hover to keep the button
+   * centred while suppressing the vertical movement.
+   */
+  @media (hover: hover) and (max-width: 749px) {
+    .hero-brand__btn.hero-brand__btn--on-image:hover {
+      transform: translateX(-50%);
+      opacity: 1;
+    }
+
+    .hero-brand__btn.hero-brand__btn--on-image:hover .hero-brand__btn-icon {
+      transform: none;
+    }
+  }
+
   .hero-brand__image {
     width: 100%;
     height: auto;
@@ -395,12 +413,7 @@
       transition: none;
     }
 
-    /* Cancel hover effects even when a pointer device is present on mobile */
-    .hero-brand__btn--on-image:hover,
-    .hero-brand__btn--on-image:hover .hero-brand__btn-icon {
-      transform: none;
-      opacity: 1;
-    }
+  
 
     .hero-brand__btn--on-image {
       display: inline-flex;
