@@ -389,7 +389,12 @@
       display: none;
     }
 
-    /* CTA centred near the bottom of the image */
+    /* CTA centred near the bottom of the image — animations disabled on mobile */
+    .hero-brand__btn--on-image,
+    .hero-brand__btn--on-image .hero-brand__btn-icon {
+      transition: none;
+    }
+
     .hero-brand__btn--on-image {
       display: inline-flex;
       position: absolute;
