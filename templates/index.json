@@ -17,7 +17,7 @@
         "subtitle": "<p>Discover Joy: Your Ultimate Holiday Gift Destination. Explore our curated selection and find the perfect gifts to delight your loved ones this holiday season.</p>",
         "mobile_subtitle": "<p>Discover Joy: Your Ultimate Holiday Gift Destination.</p>",
         "button_label": "SHOP NOW",
-        "button_link": "",
+        "button_link": "/",
         "button_background": "#1a1a1a",
         "button_text_color": "#ffffff",
         "image": "shopify://shop_images/Group_1000008197.png",
@@ -37,7 +37,9 @@
           "settings": {
             "product": "black-leather-bag",
             "pin_x": 50,
-            "pin_y": 62
+            "pin_y": 62,
+            "mobile_pin_x": 50,
+            "mobile_pin_y": 50
           }
         },
         "product_jzhFTR": {
@@ -45,7 +47,9 @@
           "settings": {
             "product": "blue-silk-tuxedo",
             "pin_x": 87,
-            "pin_y": 52
+            "pin_y": 52,
+            "mobile_pin_x": 50,
+            "mobile_pin_y": 50
           }
         },
         "product_HjW4LQ": {
@@ -53,7 +57,9 @@
           "settings": {
             "product": "chequered-red-shirt",
             "pin_x": 55,
-            "pin_y": 50
+            "pin_y": 50,
+            "mobile_pin_x": 50,
+            "mobile_pin_y": 50
           }
         },
         "product_r7FPrb": {
@@ -61,7 +67,9 @@
           "settings": {
             "product": "classic-leather-jacket",
             "pin_x": 42,
-            "pin_y": 46
+            "pin_y": 46,
+            "mobile_pin_x": 50,
+            "mobile_pin_y": 50
           }
         },
         "product_6X68hB": {
@@ -69,7 +77,9 @@
           "settings": {
             "product": "classic-varsity-top",
             "pin_x": 50,
-            "pin_y": 50
+            "pin_y": 50,
+            "mobile_pin_x": 50,
+            "mobile_pin_y": 50
           }
         },
         "product_bAUB47": {
@@ -77,7 +87,9 @@
           "settings": {
             "product": "dark-denim-top",
             "pin_x": 50,
-            "pin_y": 50
+            "pin_y": 50,
+            "mobile_pin_x": 50,
+            "mobile_pin_y": 50
           }
         }
       },
@@ -95,6 +107,8 @@
         "columns": 3,
         "image_height": 444,
         "grid_gap": 20,
+        "mobile_grid_gap": 4,
+        "mobile_image_height": 188,
         "background_color": "#ffffff",
         "text_color": "#1a1a1a",
         "redirect_to_cart": true,
@@ -109,4 +123,3 @@
     "shoppable_gallery_UGU6wU"
   ]
 }
-
